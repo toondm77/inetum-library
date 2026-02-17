@@ -1,0 +1,262 @@
+openapi: 3.0.3
+info:
+  title: RLibrary Backend API
+  version: 1.0.0
+  description: REST API for managing books, authors, and loans in the RLibrary system.
+servers:
+  - url: /api
+paths:
+  /authors:
+    get:
+      summary: Get all authors
+      operationId: authorsGet
+      tags:
+        - Author
+      responses:
+        '200':
+          description: List of authors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuthorDto'
+    post:
+      summary: Create a new author
+      operationId: authorsPost
+      tags:
+        - Author
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorDto'
+      responses:
+        '201':
+          description: Author created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorDto'
+  /authors/{id}:
+    get:
+      summary: Get author by ID
+      operationId: authorsIdGet
+      tags:
+        - Author
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Author found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorDto'
+        '404':
+          description: Author not found
+    delete:
+      summary: Delete author by ID
+      operationId: authorsIdDelete
+      tags:
+        - Author
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Author deleted
+        '404':
+          description: Author not found
+  /books:
+    get:
+      summary: Get all books
+      operationId: booksGet
+      tags:
+        - Book
+      responses:
+        '200':
+          description: List of books
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookDto'
+    post:
+      summary: Create a new book
+      operationId: booksPost
+      tags:
+        - Book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookDto'
+      responses:
+        '201':
+          description: Book created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookDto'
+  /books/{id}:
+    get:
+      summary: Get book by ID
+      operationId: booksIdGet
+      tags:
+        - Book
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Book found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookDto'
+        '404':
+          description: Book not found
+  /loans:
+    get:
+      summary: Get all loans
+      operationId: loansGet
+      tags:
+        - Loan
+      responses:
+        '200':
+          description: List of loans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LoanDto'
+    post:
+      summary: Create a new loan
+      operationId: loansPost
+      tags:
+        - Loan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanDto'
+      responses:
+        '201':
+          description: Loan created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoanDto'
+  /loans/{id}:
+    get:
+      summary: Get loan by ID
+      operationId: loansIdGet
+      tags:
+        - Loan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Loan found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoanDto'
+        '404':
+          description: Loan not found
+    delete:
+      summary: Delete loan by ID
+      operationId: loansIdDelete
+      tags:
+        - Loan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Loan deleted
+        '404':
+          description: Loan not found
+components:
+  schemas:
+    AuthorDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        firstName:
+          type: string
+        lastName:
+          type: string
+    BookDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        title:
+          type: string
+        isbn:
+          type: string
+        authorId:
+          type: integer
+          format: int64
+        publishedYear:
+          type: integer
+    LoanDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        loanDate:
+          type: string
+          format: date
+        returnDate:
+          type: string
+          format: date
+        status:
+          type: string
+        personId:
+          type: integer
+          format: int64
+        loanRuleId:
+          type: integer
+          format: int64
+        bookIds:
+          type: array
+          items:
+            type: integer
+            format: int64
