@@ -1,5 +1,6 @@
 package com.example.rlibrarybackend.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -49,9 +50,9 @@ public class Person {
     private PersonalStats personalStats;
 
     @OneToMany(mappedBy = "person")
+    @JsonManagedReference
     private List<Loan> loans = new ArrayList<>();
 
     @OneToMany(mappedBy = "person")
     private List<BookComplaint> bookComplaints = new ArrayList<>();
 }
-
