@@ -1,5 +1,6 @@
 package com.example.rlibrarybackend.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -37,6 +38,7 @@ public class Loan {
 
     @ManyToOne
     @JoinColumn(name = "person_id")
+    @JsonBackReference
     private Person person;
 
     @ManyToOne
@@ -51,4 +53,3 @@ public class Loan {
     )
     private List<Book> books = new ArrayList<>();
 }
-
