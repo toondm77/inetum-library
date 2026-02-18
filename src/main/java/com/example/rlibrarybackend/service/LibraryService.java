@@ -3,6 +3,7 @@ package com.example.rlibrarybackend.service;
 import com.example.rlibrarybackend.dto.LibraryDto;
 import com.example.rlibrarybackend.model.Library;
 import com.example.rlibrarybackend.repository.LibraryRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class LibraryService {
     private final LibraryRepository libraryRepository;
 
@@ -19,31 +21,39 @@ public class LibraryService {
     }
 
     public List<LibraryDto> getAllLibraries() {
-        return libraryRepository.findAll().stream()
+        log.debug("Fetching all libraries");
+        List<LibraryDto> libraries = libraryRepository.findAll().stream()
                 .map(this::mapEntityToDto)
                 .toList();
+        log.debug("Fetched {} libraries", libraries.size());
+        return libraries;
     }
 
     public Optional<LibraryDto> findLibraryById(Long id) {
+        log.debug("Finding library id={}", id);
         return libraryRepository.findById(id.intValue()).map(this::mapEntityToDto);
     }
 
     public LibraryDto createLibrary(LibraryDto dto) {
         // Check if library with same name already exists
         if (dto.getName() != null && libraryRepository.findByName(dto.getName()).isPresent()) {
+            log.warn("Create library failed: name '{}' already exists", dto.getName());
             throw new ResponseStatusException(HttpStatus.CONFLICT, "A library with this name already exists");
         }
         Library entity = mapDtoToEntity(dto);
         Library saved = libraryRepository.save(entity);
+        log.info("Created library id={} name='{}'", saved.getId(), saved.getName());
         return mapEntityToDto(saved);
     }
 
     public boolean deleteLibrary(Long id) {
         Integer entityId = id.intValue();
         if (!libraryRepository.existsById(entityId)) {
+            log.warn("Library id={} not found for delete", id);
             return false;
         }
         libraryRepository.deleteById(entityId);
+        log.info("Deleted library id={}", id);
         return true;
     }
 
@@ -85,4 +95,3 @@ public class LibraryService {
         return library;
     }
 }
-
