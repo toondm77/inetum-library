@@ -4,6 +4,7 @@ info:
   version: 1.0.0
   description: REST API for managing books, authors, and loans in the RLibrary system.
 servers:
+  - url: http://localhost:8080/api
   - url: /api
 paths:
   /authors:
@@ -205,6 +206,78 @@ paths:
           description: Loan deleted
         '404':
           description: Loan not found
+  /persons:
+    get:
+      summary: Get all persons
+      operationId: personsGet
+      tags:
+        - Person
+      responses:
+        '200':
+          description: List of persons
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PersonDto'
+    post:
+      summary: Create a new person
+      operationId: personsPost
+      tags:
+        - Person
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonDto'
+      responses:
+        '201':
+          description: Person created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonDto'
+  /persons/{id}:
+    get:
+      summary: Get person by ID
+      operationId: personsIdGet
+      tags:
+        - Person
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Person found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonDto'
+        '404':
+          description: Person not found
+    delete:
+      summary: Delete person by ID
+      operationId: personsIdDelete
+      tags:
+        - Person
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Person deleted
+        '404':
+          description: Person not found
 components:
   schemas:
     AuthorDto:
@@ -260,3 +333,50 @@ components:
           items:
             type: integer
             format: int64
+    PersonDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        firstName:
+          type: string
+          description: First name of the person
+        lastName:
+          type: string
+          description: Last name of the person
+        birthDate:
+          type: string
+          format: date
+          description: Date of birth
+        functie:
+          type: string
+          description: Role or function (e.g., MEMBER, STAFF, MANAGER)
+        badgeCode:
+          type: string
+          description: Unique badge code for identification
+        activeLibraryId:
+          type: integer
+          format: int64
+          description: ID of the library where the person is currently active
+        accountStatus:
+          type: string
+          description: Account status (e.g., ACTIVE, SUSPENDED)
+        personalStatsId:
+          type: integer
+          format: int64
+          description: ID of the personal statistics entity
+        loanIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: List of loan IDs associated with the person
+        bookComplaintIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: List of book complaint IDs made by the person
+      description: DTO representing a person in the library system, including identity, role, and relationships.
