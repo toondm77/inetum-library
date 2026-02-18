@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -27,11 +28,13 @@ public class LibraryController implements LibrariesApi {
     }
 
     @Override
-    public ResponseEntity<List<LibraryDto>> librariesGet(Integer page, Integer size) {
+    public ResponseEntity<List<LibraryDto>> librariesGet(Integer page, Integer size, String sort, String direction, String name, String city) {
         int p = page != null ? page : 0;
         int s = size != null ? size : 20;
-        log.info("GET /libraries requested page={} size={}", p, s);
-        List<LibraryDto> libraries = libraryService.getAllLibraries(p, s);
+        String sortField = (sort != null && !sort.isBlank()) ? sort : "name";
+        String dir = (direction != null && !direction.isBlank()) ? direction : "asc";
+        log.info("GET /libraries requested page={} size={} sort={} direction={}", p, s, sortField, dir);
+        List<LibraryDto> libraries = libraryService.getAllLibraries(p, s, sortField, dir, name, city);
         log.debug("GET /libraries returned {} items", libraries.size());
         return ResponseEntity.ok(libraries);
     }

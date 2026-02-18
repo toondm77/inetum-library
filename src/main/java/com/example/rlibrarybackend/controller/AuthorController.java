@@ -23,11 +23,13 @@ public class AuthorController implements AuthorsApi {
     }
 
     @Override
-    public ResponseEntity<List<AuthorDto>> authorsGet(Integer page, Integer size) {
+    public ResponseEntity<List<AuthorDto>> authorsGet(Integer page, Integer size, String sort, String direction, String lastName, String nationality) {
         int p = page != null ? page : 0;
         int s = size != null ? size : 20;
-        log.info("GET /authors requested page={} size={}", p, s);
-        List<AuthorDto> authors = authorService.getAllAuthors(p, s);
+        String sortField = (sort != null && !sort.isBlank()) ? sort : "id";
+        String dir = (direction != null && !direction.isBlank()) ? direction : "asc";
+        log.info("GET /authors requested page={} size={} sort={} direction={}", p, s, sortField, dir);
+        List<AuthorDto> authors = authorService.getAllAuthors(p, s, sortField, dir, lastName, nationality);
         log.debug("GET /authors returned {} items", authors.size());
         return ResponseEntity.ok(authors);
     }
