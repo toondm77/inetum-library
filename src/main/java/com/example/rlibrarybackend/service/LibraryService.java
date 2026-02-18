@@ -3,7 +3,9 @@ package com.example.rlibrarybackend.service;
 import com.example.rlibrarybackend.dto.LibraryDto;
 import com.example.rlibrarybackend.model.Library;
 import com.example.rlibrarybackend.repository.LibraryRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +29,10 @@ public class LibraryService {
     }
 
     public LibraryDto createLibrary(LibraryDto dto) {
+        // Check if library with same name already exists
+        if (dto.getName() != null && libraryRepository.findByName(dto.getName()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "A library with this name already exists");
+        }
         Library entity = mapDtoToEntity(dto);
         Library saved = libraryRepository.save(entity);
         return mapEntityToDto(saved);

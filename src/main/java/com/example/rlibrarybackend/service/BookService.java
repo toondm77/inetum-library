@@ -5,7 +5,6 @@ import com.example.rlibrarybackend.model.Author;
 import com.example.rlibrarybackend.model.Book;
 import com.example.rlibrarybackend.repository.BookRepository;
 import com.example.rlibrarybackend.repository.LibraryRepository;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,13 +32,14 @@ public class BookService {
                 .or(Optional::empty);
     }
 
-    public BookDto createBook(BookDto bookDto) {
-        if (bookDto.getLibraryId() != null && !libraryExists(bookDto.getLibraryId())) {
-            throw new IllegalArgumentException("Library with ID " + bookDto.getLibraryId() + " does not exist.");
+    public Optional<BookDto> createBook(BookDto bookDto) {
+        if (bookDto.getLibraryId() != null
+                && !libraryRepository.existsById(bookDto.getLibraryId().intValue())) {
+            return Optional.empty();
         }
         Book entity = mapDtoToEntity(bookDto);
         Book saved = bookRepository.save(entity);
-        return mapEntityToDto(saved);
+        return Optional.of(mapEntityToDto(saved));
     }
 
     public List<BookDto> getBooksByLibraryId(Long libraryId) {

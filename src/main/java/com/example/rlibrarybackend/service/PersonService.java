@@ -2,10 +2,15 @@ package com.example.rlibrarybackend.service;
 
 import com.example.rlibrarybackend.dto.PersonDto;
 import com.example.rlibrarybackend.model.AccountStatus;
+import com.example.rlibrarybackend.model.Library;
 import com.example.rlibrarybackend.model.Person;
+import com.example.rlibrarybackend.repository.LibraryRepository;
 import com.example.rlibrarybackend.repository.PersonRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -13,9 +18,11 @@ import java.util.Optional;
 @Service
 public class PersonService {
     private final PersonRepository personRepository;
+    private final LibraryRepository libraryRepository;
 
-    public PersonService(PersonRepository personRepository) {
+    public PersonService(PersonRepository personRepository, LibraryRepository libraryRepository) {
         this.personRepository = personRepository;
+        this.libraryRepository = libraryRepository;
     }
 
     public List<PersonDto> getAllPersons() {
@@ -29,7 +36,20 @@ public class PersonService {
     }
 
     public PersonDto createPerson(PersonDto dto) {
+        // Validate birthdate must be before today
+        if (dto.getBirthDate() != null && !dto.getBirthDate().isBefore(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Birth date must be before today");
+        }
+
+        // Validate library exists if provided
+        Library activeLibrary = null;
+        if (dto.getActiveLibraryId() != null) {
+            activeLibrary = libraryRepository.findById(dto.getActiveLibraryId().intValue())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Library not found"));
+        }
+
         Person toSave = mapDtoToEntity(dto);
+        toSave.setActiveLibrary(activeLibrary);
         Person saved = personRepository.save(toSave);
         return mapEntityToDto(saved);
     }
