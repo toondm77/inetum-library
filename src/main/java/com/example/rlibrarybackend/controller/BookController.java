@@ -23,11 +23,13 @@ public class BookController implements BooksApi {
     }
 
     @Override
-    public ResponseEntity<List<BookDto>> booksGet(Integer page, Integer size) {
+    public ResponseEntity<List<BookDto>> booksGet(Integer page, Integer size, String sort, String direction, String title, Long libraryId) {
         int p = page != null ? page : 0;
         int s = size != null ? size : 20;
-        log.info("GET /books requested page={} size={}", p, s);
-        List<BookDto> books = bookService.getAllBooks(p, s);
+        String sortField = (sort != null && !sort.isBlank()) ? sort : "title";
+        String dir = (direction != null && !direction.isBlank()) ? direction : "asc";
+        log.info("GET /books requested page={} size={} sort={} direction={}", p, s, sortField, dir);
+        List<BookDto> books = bookService.getAllBooks(p, s, sortField, dir, title, libraryId);
         log.debug("GET /books returned {} items", books.size());
         return ResponseEntity.ok(books);
     }

@@ -1,38 +1,49 @@
 package com.example.rlibrarybackend.controller;
 
+import com.example.rlibrarybackend.api.LoansApi;
+import com.example.rlibrarybackend.dto.LoanDto;
 import com.example.rlibrarybackend.model.Loan;
 import com.example.rlibrarybackend.service.LoanService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api")
 @Slf4j
-public class LoanController {
+public class LoanController implements LoansApi {
     private final LoanService loanService;
 
     public LoanController(LoanService loanService) {
         this.loanService = loanService;
     }
 
-    @GetMapping("/loans")
-    public ResponseEntity<List<Loan>> getAllLoans() {
-        log.info("GET /loans requested");
-        List<Loan> loans = loanService.getAllLoans();
+    @Override
+    public ResponseEntity<List<LoanDto>> loansGet(Integer page, Integer size, String sort, String direction, String status, Long personId, LocalDate loanDateFrom, LocalDate loanDateTo) {
+        int p = page != null ? page : 0;
+        int s = size != null ? size : 20;
+        String sortField = (sort != null && !sort.isBlank()) ? sort : "loanDate";
+        String dir = (direction != null && !direction.isBlank()) ? direction : "asc";
+        log.info("GET /loans requested page={} size={} sort={} direction={}", p, s, sortField, dir);
+        List<LoanDto> loans = loanService.getAllLoans(p, s, sortField, dir, status, personId, loanDateFrom, loanDateTo).stream()
+                .map(this::mapEntityToDto)
+                .collect(Collectors.toList());
         log.debug("GET /loans returned {} items", loans.size());
         return ResponseEntity.ok(loans);
     }
 
-    @GetMapping("/loans/{id}")
-    public ResponseEntity<Loan> getLoanById(@PathVariable Long id) {
+    @Override
+    public ResponseEntity<LoanDto> loansIdGet(Long id) {
         log.info("GET /loans/{} requested", id);
         return loanService.findLoanById(id)
                 .map(loan -> {
                     log.debug("GET /loans/{} found", id);
-                    return ResponseEntity.ok(loan);
+                    return ResponseEntity.ok(mapEntityToDto(loan));
                 })
                 .orElseGet(() -> {
                     log.warn("GET /loans/{} not found", id);
@@ -40,23 +51,55 @@ public class LoanController {
                 });
     }
 
-    @PostMapping("/loans")
-    public ResponseEntity<Loan> createLoan(@RequestBody Loan loan) {
+    @Override
+    public ResponseEntity<LoanDto> loansPost(LoanDto loanDto) {
         log.info("POST /loans requested");
-        Loan created = loanService.createLoan(loan);
+        Loan created = loanService.createLoan(mapDtoToEntity(loanDto));
         log.info("POST /loans created id={}", created.getId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapEntityToDto(created));
     }
 
-    @DeleteMapping("/loans/{id}")
-    public ResponseEntity<Void> deleteLoan(@PathVariable Integer id) {
+    @Override
+    public ResponseEntity<Void> loansIdDelete(Long id) {
         log.info("DELETE /loans/{} requested", id);
-        boolean deleted = loanService.deleteLoan(id);
+        boolean deleted = loanService.deleteLoan(id.intValue());
         if (!deleted) {
             log.warn("DELETE /loans/{} not found", id);
             return ResponseEntity.notFound().build();
         }
         log.info("DELETE /loans/{} deleted", id);
         return ResponseEntity.noContent().build();
+    }
+
+    private LoanDto mapEntityToDto(Loan loan) {
+        LoanDto dto = new LoanDto();
+        dto.setId(loan.getId() != null ? loan.getId().longValue() : null);
+        dto.setLoanDate(loan.getLoanDate());
+        dto.setReturnDate(loan.getReturnDate());
+        dto.setStatus(loan.getStatus() != null ? loan.getStatus().name() : null);
+        if (loan.getPerson() != null && loan.getPerson().getId() != null) {
+            dto.setPersonId(loan.getPerson().getId().longValue());
+        }
+        if (loan.getLoanRule() != null && loan.getLoanRule().getId() != null) {
+            dto.setLoanRuleId(loan.getLoanRule().getId().longValue());
+        }
+        if (loan.getBooks() != null) {
+            dto.setBookIds(loan.getBooks().stream()
+                    .filter(book -> book.getId() != null)
+                    .map(book -> book.getId().longValue())
+                    .toList());
+        }
+        return dto;
+    }
+
+    private Loan mapDtoToEntity(LoanDto dto) {
+        Loan loan = new Loan();
+        if (dto.getId() != null) {
+            loan.setId(dto.getId().intValue());
+        }
+        loan.setLoanDate(dto.getLoanDate());
+        loan.setReturnDate(dto.getReturnDate());
+        // Status, person, books linking should be handled in a dedicated method/service if needed
+        return loan;
     }
 }

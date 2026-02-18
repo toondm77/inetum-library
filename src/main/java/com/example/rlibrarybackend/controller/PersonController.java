@@ -23,11 +23,13 @@ public class PersonController implements PersonsApi {
     }
 
     @Override
-    public ResponseEntity<List<PersonDto>> personsGet(Integer page, Integer size) {
+    public ResponseEntity<List<PersonDto>> personsGet(Integer page, Integer size, String sort, String direction, String lastName, String accountStatus) {
         int p = page != null ? page : 0;
         int s = size != null ? size : 20;
-        log.info("GET /persons requested page={} size={}", p, s);
-        List<PersonDto> persons = personService.getAllPersons(p, s);
+        String sortField = (sort != null && !sort.isBlank()) ? sort : "lastName";
+        String dir = (direction != null && !direction.isBlank()) ? direction : "asc";
+        log.info("GET /persons requested page={} size={} sort={} direction={}", p, s, sortField, dir);
+        List<PersonDto> persons = personService.getAllPersons(p, s, sortField, dir, lastName, accountStatus);
         log.debug("GET /persons returned {} items", persons.size());
         return ResponseEntity.ok(persons);
     }

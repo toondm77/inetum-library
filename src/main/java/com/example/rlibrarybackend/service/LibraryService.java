@@ -5,6 +5,8 @@ import com.example.rlibrarybackend.model.Library;
 import com.example.rlibrarybackend.repository.LibraryRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -21,9 +23,17 @@ public class LibraryService {
         this.libraryRepository = libraryRepository;
     }
 
-    public List<LibraryDto> getAllLibraries(int page, int size) {
-        log.debug("Fetching all libraries page={} size={}", page, size);
-        List<LibraryDto> libraries = libraryRepository.findAll(PageRequest.of(page, size)).stream()
+    public List<LibraryDto> getAllLibraries(int page, int size, String sort, String direction, String name, String city) {
+        log.debug("Fetching all libraries page={} size={} sort={} direction={} name={} city={}", page, size, sort, direction, name, city);
+        Specification<Library> spec = Specification.where(null);
+        if (name != null && !name.isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("name")), "%%" + name.toLowerCase() + "%%"));
+        }
+        if (city != null && !city.isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("city")), "%%" + city.toLowerCase() + "%%"));
+        }
+        Sort sortOrder = Sort.by(Sort.Direction.fromString(direction != null ? direction : "asc"), sort != null && !sort.isBlank() ? sort : "name");
+        List<LibraryDto> libraries = libraryRepository.findAll(spec, PageRequest.of(page, size, sortOrder)).stream()
                 .map(this::mapEntityToDto)
                 .toList();
         log.debug("Fetched {} libraries", libraries.size());

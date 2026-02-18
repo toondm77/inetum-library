@@ -26,6 +26,29 @@ paths:
             type: integer
             minimum: 1
             default: 20
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: lastName
+          description: Field to sort by (id, firstName, lastName)
+        - in: query
+          name: direction
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+          description: Sort direction
+        - in: query
+          name: lastName
+          schema:
+            type: string
+          description: Filter by last name (contains, case-insensitive)
+        - in: query
+          name: nationality
+          schema:
+            type: string
+          description: Filter by nationality (contains, case-insensitive)
       responses:
         '200':
           description: List of authors
@@ -111,6 +134,30 @@ paths:
             type: integer
             minimum: 1
             default: 20
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: title
+          description: Field to sort by (id, title, publicationYear)
+        - in: query
+          name: direction
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+          description: Sort direction
+        - in: query
+          name: title
+          schema:
+            type: string
+          description: Filter by title (contains, case-insensitive)
+        - in: query
+          name: libraryId
+          schema:
+            type: integer
+            format: int64
+          description: Filter by library id
       responses:
         '200':
           description: List of books
@@ -185,6 +232,29 @@ paths:
             type: integer
             minimum: 1
             default: 20
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: name
+          description: Field to sort by (id, name, city)
+        - in: query
+          name: direction
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+          description: Sort direction
+        - in: query
+          name: name
+          schema:
+            type: string
+          description: Filter by name (contains, case-insensitive)
+        - in: query
+          name: city
+          schema:
+            type: string
+          description: Filter by city (contains, case-insensitive)
       responses:
         '200':
           description: List of libraries
@@ -312,6 +382,42 @@ paths:
             type: integer
             minimum: 1
             default: 20
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: loanDate
+          description: Field to sort by (id, loanDate, returnDate, status)
+        - in: query
+          name: direction
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+          description: Sort direction
+        - in: query
+          name: status
+          schema:
+            type: string
+          description: Filter by loan status
+        - in: query
+          name: personId
+          schema:
+            type: integer
+            format: int64
+          description: Filter by person id
+        - in: query
+          name: loanDateFrom
+          schema:
+            type: string
+            format: date
+          description: Filter loans from this date (inclusive)
+        - in: query
+          name: loanDateTo
+          schema:
+            type: string
+            format: date
+          description: Filter loans until this date (inclusive)
       responses:
         '200':
           description: List of loans
@@ -397,6 +503,29 @@ paths:
             type: integer
             minimum: 1
             default: 20
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: lastName
+          description: Field to sort by (id, firstName, lastName, birthDate)
+        - in: query
+          name: direction
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+          description: Sort direction
+        - in: query
+          name: lastName
+          schema:
+            type: string
+          description: Filter by last name (contains, case-insensitive)
+        - in: query
+          name: accountStatus
+          schema:
+            type: string
+          description: Filter by account status
       responses:
         '200':
           description: List of persons

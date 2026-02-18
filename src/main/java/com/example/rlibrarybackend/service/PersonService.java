@@ -8,6 +8,8 @@ import com.example.rlibrarybackend.repository.LibraryRepository;
 import com.example.rlibrarybackend.repository.PersonRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -28,9 +30,17 @@ public class PersonService {
         this.libraryRepository = libraryRepository;
     }
 
-    public List<PersonDto> getAllPersons(int page, int size) {
-        log.debug("Fetching all persons page={} size={}", page, size);
-        List<PersonDto> persons = personRepository.findAll(PageRequest.of(page, size)).stream()
+    public List<PersonDto> getAllPersons(int page, int size, String sort, String direction, String lastName, String accountStatus) {
+        log.debug("Fetching all persons page={} size={} sort={} direction={} lastName={} accountStatus={}", page, size, sort, direction, lastName, accountStatus);
+        Specification<Person> spec = Specification.where(null);
+        if (lastName != null && !lastName.isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("lastName")), "%%" + lastName.toLowerCase() + "%%"));
+        }
+        if (accountStatus != null && !accountStatus.isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.equal(cb.lower(root.get("accountStatus")), accountStatus.toLowerCase()));
+        }
+        Sort sortOrder = Sort.by(Sort.Direction.fromString(direction != null ? direction : "asc"), sort != null && !sort.isBlank() ? sort : "lastName");
+        List<PersonDto> persons = personRepository.findAll(spec, PageRequest.of(page, size, sortOrder)).stream()
                 .map(this::mapEntityToDto)
                 .toList();
         log.debug("Fetched {} persons", persons.size());

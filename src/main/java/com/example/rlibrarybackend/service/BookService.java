@@ -7,6 +7,8 @@ import com.example.rlibrarybackend.repository.BookRepository;
 import com.example.rlibrarybackend.repository.LibraryRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,9 +25,17 @@ public class BookService {
         this.libraryRepository = libraryRepository;
     }
 
-    public List<BookDto> getAllBooks(int page, int size) {
-        log.debug("Fetching all books page={} size={}", page, size);
-        List<BookDto> books = bookRepository.findAll(PageRequest.of(page, size)).stream()
+    public List<BookDto> getAllBooks(int page, int size, String sort, String direction, String title, Long libraryId) {
+        log.debug("Fetching all books page={} size={} sort={} direction={} title={} libraryId={}", page, size, sort, direction, title, libraryId);
+        Specification<Book> spec = Specification.where(null);
+        if (title != null && !title.isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("title")), "%%" + title.toLowerCase() + "%%"));
+        }
+        if (libraryId != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("library").get("id"), libraryId.intValue()));
+        }
+        Sort sortOrder = Sort.by(Sort.Direction.fromString(direction != null ? direction : "asc"), sort != null && !sort.isBlank() ? sort : "title");
+        List<BookDto> books = bookRepository.findAll(spec, PageRequest.of(page, size, sortOrder)).stream()
                 .map(this::mapEntityToDto)
                 .toList();
         log.debug("Fetched {} books", books.size());
