@@ -2,6 +2,7 @@ package com.example.rlibrarybackend.service;
 
 import com.example.rlibrarybackend.model.Loan;
 import com.example.rlibrarybackend.repository.LoanRepository;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +15,13 @@ public class LoanService {
 
     public LoanService(LoanRepository loanRepository) {
         this.loanRepository = loanRepository;
+    }
+
+    public List<Loan> getAllLoans(int page, int size) {
+        log.debug("Fetching all loans page={} size={}", page, size);
+        List<Loan> loans = loanRepository.findAll(PageRequest.of(page, size)).getContent();
+        log.debug("Fetched {} loans", loans.size());
+        return loans;
     }
 
     public List<Loan> getAllLoans() {

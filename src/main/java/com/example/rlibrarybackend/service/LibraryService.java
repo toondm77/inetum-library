@@ -4,6 +4,7 @@ import com.example.rlibrarybackend.dto.LibraryDto;
 import com.example.rlibrarybackend.model.Library;
 import com.example.rlibrarybackend.repository.LibraryRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -18,6 +19,15 @@ public class LibraryService {
 
     public LibraryService(LibraryRepository libraryRepository) {
         this.libraryRepository = libraryRepository;
+    }
+
+    public List<LibraryDto> getAllLibraries(int page, int size) {
+        log.debug("Fetching all libraries page={} size={}", page, size);
+        List<LibraryDto> libraries = libraryRepository.findAll(PageRequest.of(page, size)).stream()
+                .map(this::mapEntityToDto)
+                .toList();
+        log.debug("Fetched {} libraries", libraries.size());
+        return libraries;
     }
 
     public List<LibraryDto> getAllLibraries() {

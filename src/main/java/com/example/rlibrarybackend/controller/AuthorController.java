@@ -23,9 +23,11 @@ public class AuthorController implements AuthorsApi {
     }
 
     @Override
-    public ResponseEntity<List<AuthorDto>> authorsGet() {
-        log.info("GET /authors requested");
-        List<AuthorDto> authors = authorService.getAllAuthors();
+    public ResponseEntity<List<AuthorDto>> authorsGet(Integer page, Integer size) {
+        int p = page != null ? page : 0;
+        int s = size != null ? size : 20;
+        log.info("GET /authors requested page={} size={}", p, s);
+        List<AuthorDto> authors = authorService.getAllAuthors(p, s);
         log.debug("GET /authors returned {} items", authors.size());
         return ResponseEntity.ok(authors);
     }

@@ -13,6 +13,19 @@ paths:
       operationId: authorsGet
       tags:
         - Author
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
       responses:
         '200':
           description: List of authors
@@ -85,6 +98,19 @@ paths:
       operationId: booksGet
       tags:
         - Book
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
       responses:
         '200':
           description: List of books
@@ -146,6 +172,19 @@ paths:
       operationId: librariesGet
       tags:
         - Library
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
       responses:
         '200':
           description: List of libraries
@@ -231,6 +270,18 @@ paths:
           schema:
             type: integer
             format: int64
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
       responses:
         '200':
           description: List of books in the library
@@ -248,6 +299,19 @@ paths:
       operationId: loansGet
       tags:
         - Loan
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
       responses:
         '200':
           description: List of loans
@@ -320,6 +384,19 @@ paths:
       operationId: personsGet
       tags:
         - Person
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
       responses:
         '200':
           description: List of persons

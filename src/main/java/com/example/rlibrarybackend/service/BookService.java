@@ -6,6 +6,7 @@ import com.example.rlibrarybackend.model.Book;
 import com.example.rlibrarybackend.repository.BookRepository;
 import com.example.rlibrarybackend.repository.LibraryRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +21,15 @@ public class BookService {
     public BookService(BookRepository bookRepository, LibraryRepository libraryRepository) {
         this.bookRepository = bookRepository;
         this.libraryRepository = libraryRepository;
+    }
+
+    public List<BookDto> getAllBooks(int page, int size) {
+        log.debug("Fetching all books page={} size={}", page, size);
+        List<BookDto> books = bookRepository.findAll(PageRequest.of(page, size)).stream()
+                .map(this::mapEntityToDto)
+                .toList();
+        log.debug("Fetched {} books", books.size());
+        return books;
     }
 
     public List<BookDto> getAllBooks() {
@@ -48,6 +58,15 @@ public class BookService {
         Book saved = bookRepository.save(entity);
         log.info("Created book id={}", saved.getId());
         return Optional.of(mapEntityToDto(saved));
+    }
+
+    public List<BookDto> getBooksByLibraryId(Long libraryId, int page, int size) {
+        log.debug("Fetching books for library id={} page={} size={}", libraryId, page, size);
+        List<BookDto> books = bookRepository.findByLibraryId(libraryId.intValue(), PageRequest.of(page, size)).stream()
+                .map(this::mapEntityToDto)
+                .toList();
+        log.debug("Fetched {} books for library id={}", books.size(), libraryId);
+        return books;
     }
 
     public List<BookDto> getBooksByLibraryId(Long libraryId) {

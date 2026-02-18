@@ -16,7 +16,6 @@ public class RLibraryBackendApplication {
 
     @EventListener(ApplicationReadyEvent.class)
     public void openHomePage() throws IOException {
-        // Launch default browser to the app root after startup
         Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler http://localhost:8080/swagger-ui/index.html#/");
     }
 }

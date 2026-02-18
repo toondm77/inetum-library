@@ -23,9 +23,11 @@ public class BookController implements BooksApi {
     }
 
     @Override
-    public ResponseEntity<List<BookDto>> booksGet() {
-        log.info("GET /books requested");
-        List<BookDto> books = bookService.getAllBooks();
+    public ResponseEntity<List<BookDto>> booksGet(Integer page, Integer size) {
+        int p = page != null ? page : 0;
+        int s = size != null ? size : 20;
+        log.info("GET /books requested page={} size={}", p, s);
+        List<BookDto> books = bookService.getAllBooks(p, s);
         log.debug("GET /books returned {} items", books.size());
         return ResponseEntity.ok(books);
     }

@@ -7,6 +7,7 @@ import com.example.rlibrarybackend.model.Person;
 import com.example.rlibrarybackend.repository.LibraryRepository;
 import com.example.rlibrarybackend.repository.PersonRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,6 +26,15 @@ public class PersonService {
     public PersonService(PersonRepository personRepository, LibraryRepository libraryRepository) {
         this.personRepository = personRepository;
         this.libraryRepository = libraryRepository;
+    }
+
+    public List<PersonDto> getAllPersons(int page, int size) {
+        log.debug("Fetching all persons page={} size={}", page, size);
+        List<PersonDto> persons = personRepository.findAll(PageRequest.of(page, size)).stream()
+                .map(this::mapEntityToDto)
+                .toList();
+        log.debug("Fetched {} persons", persons.size());
+        return persons;
     }
 
     public List<PersonDto> getAllPersons() {
