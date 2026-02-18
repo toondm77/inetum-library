@@ -64,3 +64,19 @@ INSERT INTO book (title, author, description, isbn, publication_year, amount_of_
 ('The Old Man and the Sea', 'Ernest Hemingway', 'Novel about an old fisherman''s struggle', '978-0684801223', 1952, 127, '1952-09-01', 'BUSINESS', 'AVAILABLE', 'ADULT', 10.99, 4);
 INSERT INTO book (title, author, description, isbn, publication_year, amount_of_pages, release_date, theme, book_state, age_category, purchase_price, dupplicates) VALUES
 ('The Great Gatsby', 'F.Scott Fitzgerald', 'Jazz Age classic about love and wealth', '978-0743273565', 1925, 180, '1925-04-10', 'FINANCE', 'AVAILABLE', 'ADULT', 11.99, 8);
+
+-- Insert Persons
+INSERT INTO person (first_name, last_name, birth_date, functie, badge_code, account_status) VALUES
+('Alice', 'Smith', '1990-05-15', 'MEMBER', 'B12345', 'ACTIVE'),
+('Bob', 'Johnson', '1985-09-20', 'MEMBER', 'B67890', 'ACTIVE');
+
+-- Insert Loans
+INSERT INTO loan (loan_date, return_date, status, person_id) VALUES
+('2026-02-01', '2026-02-15', 'LOANED', 1),
+('2026-01-10', '2026-01-24', 'RETURNED', 2);
+
+-- Link Loans to Books (loan_books join table)
+INSERT INTO loan_books (loan_id, book_id) VALUES
+(1, 1), -- Loan 1 for Book 1 (1984)
+(1, 2), -- Loan 1 for Book 2 (The Hobbit)
+(2, 3); -- Loan 2 for Book 3 (Pride and Prejudice)
