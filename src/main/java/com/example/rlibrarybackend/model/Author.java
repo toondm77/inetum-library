@@ -10,6 +10,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import jakarta.validation.constraints.*;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,13 +26,25 @@ public class Author {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @NotBlank
+    @Size(max = 100)
     private String firstName;
+
+    @NotBlank
+    @Size(max = 100)
     private String lastName;
+
+    @NotBlank
+    @Size(max = 100)
     private String nationality;
+
+    @Size(max = 1000)
     private String description;
+
+    @NotNull
+    @Past
     private LocalDate birthDate;
 
     @ManyToMany(mappedBy = "authors")
     private List<Book> books = new ArrayList<>();
 }
-

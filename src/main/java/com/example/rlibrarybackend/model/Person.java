@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,10 +34,22 @@ public class Person {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @NotBlank
+    @Size(max = 100)
     private String firstName;
+
+    @NotBlank
+    @Size(max = 100)
     private String lastName;
+
+    @NotNull
+    @Past
     private LocalDate birthDate;
+
+    @Size(max = 100)
     private String functie;
+
+    @Size(max = 100)
     private String badgeCode;
 
     @ManyToOne
