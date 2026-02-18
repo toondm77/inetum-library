@@ -6,6 +6,7 @@ import com.example.rlibrarybackend.model.Library;
 import com.example.rlibrarybackend.model.Person;
 import com.example.rlibrarybackend.repository.LibraryRepository;
 import com.example.rlibrarybackend.repository.PersonRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
