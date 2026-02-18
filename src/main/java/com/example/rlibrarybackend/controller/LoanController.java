@@ -35,7 +35,7 @@ public class LoanController {
     }
 
     @DeleteMapping("/loans/{id}")
-    public ResponseEntity<Void> deleteLoan(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteLoan(@PathVariable Integer id) {
         boolean deleted = loanService.deleteLoan(id);
         if (!deleted) {
             return ResponseEntity.notFound().build();

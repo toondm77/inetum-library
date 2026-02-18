@@ -26,12 +26,11 @@ public class LoanService {
         return loanRepository.save(loan);
     }
 
-    public boolean deleteLoan(Long id) {
-        Integer entityId = id.intValue();
-        if (!loanRepository.existsById(entityId)) {
+    public boolean deleteLoan(Integer id) {
+        if (!loanRepository.existsById(id)) {
             return false;
         }
-        loanRepository.deleteById(entityId);
+        loanRepository.deleteById(id);
         return true;
     }
 }

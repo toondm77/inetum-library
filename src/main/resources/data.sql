@@ -65,6 +65,10 @@ INSERT INTO book (title, author, description, isbn, publication_year, amount_of_
 INSERT INTO book (title, author, description, isbn, publication_year, amount_of_pages, release_date, theme, book_state, age_category, purchase_price, dupplicates) VALUES
 ('The Great Gatsby', 'F.Scott Fitzgerald', 'Jazz Age classic about love and wealth', '978-0743273565', 1925, 180, '1925-04-10', 'FINANCE', 'AVAILABLE', 'ADULT', 11.99, 8);
 
+-- Insert Libraries
+INSERT INTO library (name, country, city, street, street_number, description) VALUES
+('Central Library', 'Belgium', 'Brussels', 'Main Street', '12A', 'Primary public library for the city');
+
 -- Insert Persons
 INSERT INTO person (first_name, last_name, birth_date, functie, badge_code, account_status) VALUES
 ('Alice', 'Smith', '1990-05-15', 'MEMBER', 'B12345', 'ACTIVE'),
