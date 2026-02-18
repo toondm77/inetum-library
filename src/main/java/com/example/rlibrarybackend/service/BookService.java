@@ -1,8 +1,11 @@
 package com.example.rlibrarybackend.service;
 
 import com.example.rlibrarybackend.dto.BookDto;
+import com.example.rlibrarybackend.model.Author;
 import com.example.rlibrarybackend.model.Book;
 import com.example.rlibrarybackend.repository.BookRepository;
+import com.example.rlibrarybackend.repository.LibraryRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,9 +14,11 @@ import java.util.Optional;
 @Service
 public class BookService {
     private final BookRepository bookRepository;
+    private final LibraryRepository libraryRepository;
 
-    public BookService(BookRepository bookRepository) {
+    public BookService(BookRepository bookRepository, LibraryRepository libraryRepository) {
         this.bookRepository = bookRepository;
+        this.libraryRepository = libraryRepository;
     }
 
     public List<BookDto> getAllBooks() {
@@ -23,13 +28,28 @@ public class BookService {
     }
 
     public Optional<BookDto> findBookById(Long id) {
-        return bookRepository.findById(id.intValue()).map(this::mapEntityToDto);
+        return bookRepository.findById(id.intValue())
+                .map(this::mapEntityToDto)
+                .or(Optional::empty);
     }
 
     public BookDto createBook(BookDto bookDto) {
+        if (bookDto.getLibraryId() != null && !libraryExists(bookDto.getLibraryId())) {
+            throw new IllegalArgumentException("Library with ID " + bookDto.getLibraryId() + " does not exist.");
+        }
         Book entity = mapDtoToEntity(bookDto);
         Book saved = bookRepository.save(entity);
         return mapEntityToDto(saved);
+    }
+
+    public List<BookDto> getBooksByLibraryId(Long libraryId) {
+        return bookRepository.findByLibraryId(libraryId.intValue()).stream()
+                .map(this::mapEntityToDto)
+                .toList();
+    }
+
+    public boolean libraryExists(Long libraryId) {
+        return libraryId != null && libraryRepository.existsById(libraryId.intValue());
     }
 
     private BookDto mapEntityToDto(Book book) {
@@ -41,10 +61,14 @@ public class BookService {
         dto.setIsbn(book.getIsbn());
         dto.setPublishedYear(book.getPublicationYear());
         if (book.getAuthors() != null && !book.getAuthors().isEmpty()) {
-            var firstAuthor = book.getAuthors().getFirst();
+            Author firstAuthor = book.getAuthors().getFirst();
             if (firstAuthor.getId() != null) {
                 dto.setAuthorId(firstAuthor.getId().longValue());
             }
+        }
+        if (book.getLibrary() != null && book.getLibrary().getId() != null) {
+            dto.setLibraryId(book.getLibrary().getId().longValue());
+            dto.setLibraryName(book.getLibrary().getName());
         }
         return dto;
     }
@@ -57,7 +81,10 @@ public class BookService {
         book.setTitle(dto.getTitle());
         book.setIsbn(dto.getIsbn());
         book.setPublicationYear(dto.getPublishedYear() != null ? dto.getPublishedYear() : 0);
+        if (dto.getLibraryId() != null) {
+            libraryRepository.findById(dto.getLibraryId().intValue())
+                    .ifPresent(book::setLibrary);
+        }
         return book;
     }
 }
-
