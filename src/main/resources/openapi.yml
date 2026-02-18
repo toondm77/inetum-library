@@ -402,6 +402,9 @@ components:
   schemas:
     AuthorDto:
       type: object
+      required:
+        - firstName
+        - lastName
       properties:
         id:
           type: integer
@@ -409,10 +412,20 @@ components:
           readOnly: true
         firstName:
           type: string
+          minLength: 1
+          maxLength: 100
         lastName:
           type: string
+          minLength: 1
+          maxLength: 100
     BookDto:
       type: object
+      required:
+        - title
+        - isbn
+        - authorId
+        - libraryId
+        - publishedYear
       properties:
         id:
           type: integer
@@ -420,8 +433,12 @@ components:
           readOnly: true
         title:
           type: string
+          minLength: 1
+          maxLength: 200
         isbn:
           type: string
+          minLength: 10
+          maxLength: 17
         authorId:
           type: integer
           format: int64
@@ -433,8 +450,14 @@ components:
           readOnly: true
         publishedYear:
           type: integer
+          minimum: 1400
+          maximum: 2100
     LoanDto:
       type: object
+      required:
+        - loanDate
+        - personId
+        - bookIds
       properties:
         id:
           type: integer
@@ -456,11 +479,16 @@ components:
           format: int64
         bookIds:
           type: array
+          minItems: 1
           items:
             type: integer
             format: int64
     PersonDto:
       type: object
+      required:
+        - firstName
+        - lastName
+        - birthDate
       properties:
         id:
           type: integer
@@ -468,56 +496,55 @@ components:
           readOnly: true
         firstName:
           type: string
-          description: First name of the person
+          minLength: 1
+          maxLength: 100
         lastName:
           type: string
-          description: Last name of the person
+          minLength: 1
+          maxLength: 100
         birthDate:
           type: string
           format: date
-          description: Date of birth
         functie:
           type: string
-          description: Role or function (e.g., MEMBER, STAFF, MANAGER)
         badgeCode:
           type: string
-          description: Unique badge code for identification
         activeLibraryId:
           type: integer
           format: int64
-          description: ID of the library where the person is currently active
         accountStatus:
           type: string
-          description: Account status (e.g., ACTIVE, SUSPENDED)
         personalStatsId:
           type: integer
           format: int64
-          description: ID of the personal statistics entity
         loanIds:
           type: array
           items:
             type: integer
             format: int64
-          description: List of loan IDs associated with the person
         bookComplaintIds:
           type: array
           items:
             type: integer
             format: int64
-          description: List of book complaint IDs made by the person
-      description: DTO representing a person in the library system, including identity, role, and relationships.
     ErrorResponse:
       type: object
+      required:
+        - status
+        - message
       properties:
         status:
           type: integer
         message:
           type: string
-      required:
-        - status
-        - message
     LibraryDto:
       type: object
+      required:
+        - name
+        - country
+        - city
+        - street
+        - streetNumber
       properties:
         id:
           type: integer
@@ -525,21 +552,27 @@ components:
           readOnly: true
         name:
           type: string
+          minLength: 1
+          maxLength: 200
         country:
           type: string
-          description: Country where the library is located
+          minLength: 1
+          maxLength: 100
         city:
           type: string
-          description: City where the library is located
+          minLength: 1
+          maxLength: 100
         street:
           type: string
-          description: Street name of the library
+          minLength: 1
+          maxLength: 100
         streetNumber:
           type: string
-          description: Street number of the library
+          minLength: 1
+          maxLength: 20
         description:
           type: string
-          description: Description of the library
+          maxLength: 1000
         address:
           type: string
         phoneNumber:
@@ -553,14 +586,11 @@ components:
         libraryStatsId:
           type: integer
           format: int64
-          description: ID of the library statistics entity
         libraryRuleId:
           type: integer
           format: int64
-          description: ID of the library rules entity
         bookIds:
           type: array
           items:
             type: integer
             format: int64
-      description: DTO representing a library, including its details and associated books.

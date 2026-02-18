@@ -11,6 +11,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,12 +33,18 @@ public class Loan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @NotNull
+    @PastOrPresent
     private LocalDate loanDate;
+
+    @PastOrPresent
     private LocalDate returnDate;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     private LoanStatus status;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "person_id")
     @JsonBackReference
@@ -45,6 +54,8 @@ public class Loan {
     @JoinColumn(name = "loan_rule_id")
     private LoanRule loanRule;
 
+    @NotNull
+    @Size(min = 1)
     @ManyToMany
     @JoinTable(
             name = "loan_books",

@@ -6,6 +6,7 @@ import com.example.rlibrarybackend.model.Library;
 import com.example.rlibrarybackend.model.Person;
 import com.example.rlibrarybackend.repository.LibraryRepository;
 import com.example.rlibrarybackend.repository.PersonRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class PersonService {
     private final PersonRepository personRepository;
     private final LibraryRepository libraryRepository;
@@ -26,40 +28,52 @@ public class PersonService {
     }
 
     public List<PersonDto> getAllPersons() {
-        return personRepository.findAll().stream()
+        log.debug("Fetching all persons");
+        List<PersonDto> persons = personRepository.findAll().stream()
                 .map(this::mapEntityToDto)
                 .toList();
+        log.debug("Fetched {} persons", persons.size());
+        return persons;
     }
 
     public Optional<PersonDto> findPersonById(Long id) {
+        log.debug("Finding person id={}", id);
         return personRepository.findById(id.intValue()).map(this::mapEntityToDto);
     }
 
     public PersonDto createPerson(PersonDto dto) {
         // Validate birthdate must be before today
         if (dto.getBirthDate() != null && !dto.getBirthDate().isBefore(LocalDate.now())) {
+            log.warn("Create person failed: birthDate must be before today");
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Birth date must be before today");
         }
 
         // Validate library exists if provided
         Library activeLibrary = null;
         if (dto.getActiveLibraryId() != null) {
+            log.debug("Validating active library id={}", dto.getActiveLibraryId());
             activeLibrary = libraryRepository.findById(dto.getActiveLibraryId().intValue())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Library not found"));
+                    .orElseThrow(() -> {
+                        log.warn("Create person failed: library id={} not found", dto.getActiveLibraryId());
+                        return new ResponseStatusException(HttpStatus.NOT_FOUND, "Library not found");
+                    });
         }
 
         Person toSave = mapDtoToEntity(dto);
         toSave.setActiveLibrary(activeLibrary);
         Person saved = personRepository.save(toSave);
+        log.info("Created person id={}", saved.getId());
         return mapEntityToDto(saved);
     }
 
     public boolean deletePerson(Long id) {
         Integer entityId = id.intValue();
         if (!personRepository.existsById(entityId)) {
+            log.warn("Person id={} not found for delete", id);
             return false;
         }
         personRepository.deleteById(entityId);
+        log.info("Deleted person id={}", id);
         return true;
     }
 
@@ -117,4 +131,3 @@ public class PersonService {
         return person;
     }
 }
-

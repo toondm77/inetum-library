@@ -2,12 +2,14 @@ package com.example.rlibrarybackend.service;
 
 import com.example.rlibrarybackend.dto.AuthorDto;
 import com.example.rlibrarybackend.repository.AuthorRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class AuthorService {
     private final AuthorRepository authorRepository;
 
@@ -16,27 +18,35 @@ public class AuthorService {
     }
 
     public List<AuthorDto> getAllAuthors() {
-        return authorRepository.findAll().stream()
+        log.debug("Fetching all authors");
+        List<AuthorDto> authors = authorRepository.findAll().stream()
                 .map(this::mapEntityToDto)
                 .toList();
+        log.debug("Fetched {} authors", authors.size());
+        return authors;
     }
 
     public AuthorDto createAuthor(AuthorDto authorDto) {
+        log.debug("Creating author");
         com.example.rlibrarybackend.model.Author entity = mapDtoToEntity(authorDto);
         com.example.rlibrarybackend.model.Author saved = authorRepository.save(entity);
+        log.info("Created author id={}", saved.getId());
         return mapEntityToDto(saved);
     }
 
     public Optional<AuthorDto> findAuthorById(Long id) {
+        log.debug("Finding author id={}", id);
         return authorRepository.findById(id.intValue()).map(this::mapEntityToDto);
     }
 
     public boolean deleteAuthor(Long id) {
         Integer entityId = id.intValue();
         if (!authorRepository.existsById(entityId)) {
+            log.warn("Author id={} not found for delete", id);
             return false;
         }
         authorRepository.deleteById(entityId);
+        log.info("Deleted author id={}", id);
         return true;
     }
 

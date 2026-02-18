@@ -5,12 +5,14 @@ import com.example.rlibrarybackend.model.Author;
 import com.example.rlibrarybackend.model.Book;
 import com.example.rlibrarybackend.repository.BookRepository;
 import com.example.rlibrarybackend.repository.LibraryRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class BookService {
     private final BookRepository bookRepository;
     private final LibraryRepository libraryRepository;
@@ -21,12 +23,16 @@ public class BookService {
     }
 
     public List<BookDto> getAllBooks() {
-        return bookRepository.findAll().stream()
+        log.debug("Fetching all books");
+        List<BookDto> books = bookRepository.findAll().stream()
                 .map(this::mapEntityToDto)
                 .toList();
+        log.debug("Fetched {} books", books.size());
+        return books;
     }
 
     public Optional<BookDto> findBookById(Long id) {
+        log.debug("Finding book id={}", id);
         return bookRepository.findById(id.intValue())
                 .map(this::mapEntityToDto)
                 .or(Optional::empty);
@@ -35,21 +41,28 @@ public class BookService {
     public Optional<BookDto> createBook(BookDto bookDto) {
         if (bookDto.getLibraryId() != null
                 && !libraryRepository.existsById(bookDto.getLibraryId().intValue())) {
+            log.warn("Create book failed: library id={} not found", bookDto.getLibraryId());
             return Optional.empty();
         }
         Book entity = mapDtoToEntity(bookDto);
         Book saved = bookRepository.save(entity);
+        log.info("Created book id={}", saved.getId());
         return Optional.of(mapEntityToDto(saved));
     }
 
     public List<BookDto> getBooksByLibraryId(Long libraryId) {
-        return bookRepository.findByLibraryId(libraryId.intValue()).stream()
+        log.debug("Fetching books for library id={}", libraryId);
+        List<BookDto> books = bookRepository.findByLibraryId(libraryId.intValue()).stream()
                 .map(this::mapEntityToDto)
                 .toList();
+        log.debug("Fetched {} books for library id={}", books.size(), libraryId);
+        return books;
     }
 
     public boolean libraryExists(Long libraryId) {
-        return libraryId != null && libraryRepository.existsById(libraryId.intValue());
+        boolean exists = libraryId != null && libraryRepository.existsById(libraryId.intValue());
+        log.debug("Library id={} exists={}", libraryId, exists);
+        return exists;
     }
 
     private BookDto mapEntityToDto(Book book) {

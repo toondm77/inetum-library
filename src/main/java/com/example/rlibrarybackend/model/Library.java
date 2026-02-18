@@ -6,6 +6,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,11 +26,27 @@ public class Library {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @NotBlank
+    @Size(max = 200)
     private String name;
+
+    @NotBlank
+    @Size(max = 100)
     private String country;
+
+    @NotBlank
+    @Size(max = 100)
     private String city;
+
+    @NotBlank
+    @Size(max = 100)
     private String street;
+
+    @NotBlank
+    @Size(max = 20)
     private String streetNumber;
+
+    @Size(max = 1000)
     private String description;
 
     @OneToMany(mappedBy = "library")
@@ -40,4 +58,3 @@ public class Library {
     @OneToOne(mappedBy = "library")
     private LibraryRule libraryRule;
 }
-

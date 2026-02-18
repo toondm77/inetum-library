@@ -3,6 +3,7 @@ package com.example.rlibrarybackend.controller;
 import com.example.rlibrarybackend.api.PersonsApi;
 import com.example.rlibrarybackend.dto.PersonDto;
 import com.example.rlibrarybackend.service.PersonService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
+@Slf4j
 public class PersonController implements PersonsApi {
 
     private final PersonService personService;
@@ -22,29 +24,43 @@ public class PersonController implements PersonsApi {
 
     @Override
     public ResponseEntity<List<PersonDto>> personsGet() {
-        return ResponseEntity.ok(personService.getAllPersons());
+        log.info("GET /persons requested");
+        List<PersonDto> persons = personService.getAllPersons();
+        log.debug("GET /persons returned {} items", persons.size());
+        return ResponseEntity.ok(persons);
     }
 
     @Override
     public ResponseEntity<PersonDto> personsIdGet(Long id) {
+        log.info("GET /persons/{} requested", id);
         return personService.findPersonById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .map(dto -> {
+                    log.debug("GET /persons/{} found", id);
+                    return ResponseEntity.ok(dto);
+                })
+                .orElseGet(() -> {
+                    log.warn("GET /persons/{} not found", id);
+                    return ResponseEntity.notFound().build();
+                });
     }
 
     @Override
     public ResponseEntity<PersonDto> personsPost(PersonDto personDto) {
+        log.info("POST /persons requested");
         PersonDto created = personService.createPerson(personDto);
+        log.info("POST /persons created id={}", created.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @Override
     public ResponseEntity<Void> personsIdDelete(Long id) {
+        log.info("DELETE /persons/{} requested", id);
         boolean deleted = personService.deletePerson(id);
         if (!deleted) {
+            log.warn("DELETE /persons/{} not found", id);
             return ResponseEntity.notFound().build();
         }
+        log.info("DELETE /persons/{} deleted", id);
         return ResponseEntity.noContent().build();
     }
 }
-
