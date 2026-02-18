@@ -112,6 +112,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BookDto'
+        '404':
+          description: Library not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /books/{id}:
     get:
       summary: Get book by ID
@@ -167,6 +173,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LibraryDto'
+        '409':
+          description: A library with this name already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /libraries/{id}:
     get:
       summary: Get library by ID
@@ -335,6 +347,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PersonDto'
+        '400':
+          description: Invalid birthdate (must be before today)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Library not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /persons/{id}:
     get:
       summary: Get person by ID
@@ -409,36 +433,6 @@ components:
           readOnly: true
         publishedYear:
           type: integer
-    LibraryDto:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          readOnly: true
-        name:
-          type: string
-        country:
-          type: string
-        city:
-          type: string
-        street:
-          type: string
-        streetNumber:
-          type: string
-        description:
-          type: string
-        libraryStatsId:
-          type: integer
-          format: int64
-        libraryRuleId:
-          type: integer
-          format: int64
-        bookIds:
-          type: array
-          items:
-            type: integer
-            format: int64
     LoanDto:
       type: object
       properties:
@@ -512,3 +506,61 @@ components:
             format: int64
           description: List of book complaint IDs made by the person
       description: DTO representing a person in the library system, including identity, role, and relationships.
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+        message:
+          type: string
+      required:
+        - status
+        - message
+    LibraryDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        name:
+          type: string
+        country:
+          type: string
+          description: Country where the library is located
+        city:
+          type: string
+          description: City where the library is located
+        street:
+          type: string
+          description: Street name of the library
+        streetNumber:
+          type: string
+          description: Street number of the library
+        description:
+          type: string
+          description: Description of the library
+        address:
+          type: string
+        phoneNumber:
+          type: string
+        email:
+          type: string
+        website:
+          type: string
+        openingHours:
+          type: string
+        libraryStatsId:
+          type: integer
+          format: int64
+          description: ID of the library statistics entity
+        libraryRuleId:
+          type: integer
+          format: int64
+          description: ID of the library rules entity
+        bookIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+      description: DTO representing a library, including its details and associated books.

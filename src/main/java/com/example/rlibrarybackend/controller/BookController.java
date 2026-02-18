@@ -34,7 +34,8 @@ public class BookController implements BooksApi {
 
     @Override
     public ResponseEntity<BookDto> booksPost(BookDto bookDto) {
-        BookDto created = bookService.createBook(bookDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        return bookService.createBook(bookDto)
+                .map(created -> ResponseEntity.status(HttpStatus.CREATED).body(created))
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
     }
 }
