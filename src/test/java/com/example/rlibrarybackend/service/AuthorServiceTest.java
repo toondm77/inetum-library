@@ -45,7 +45,7 @@ class AuthorServiceTest {
     void getAllAuthors_returnsMappedList() {
         when(authorRepository.findAll()).thenReturn(Collections.singletonList(entity));
 
-        var result = authorService.getAllAuthors();
+        var result = authorService.getAllAuthors(1,1);
         assertEquals(1, result.size());
         assertEquals("George", result.getFirst().getFirstName());
         verify(authorRepository).findAll();

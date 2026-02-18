@@ -1,8 +1,10 @@
 package com.example.rlibrarybackend.service;
 
 import com.example.rlibrarybackend.dto.AuthorDto;
+import com.example.rlibrarybackend.model.Author;
 import com.example.rlibrarybackend.repository.AuthorRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,9 +19,9 @@ public class AuthorService {
         this.authorRepository = authorRepository;
     }
 
-    public List<AuthorDto> getAllAuthors() {
-        log.debug("Fetching all authors");
-        List<AuthorDto> authors = authorRepository.findAll().stream()
+    public List<AuthorDto> getAllAuthors(int page, int size) {
+        log.debug("Fetching authors page={} size={}", page, size);
+        List<AuthorDto> authors = authorRepository.findAll(PageRequest.of(page, size)).stream()
                 .map(this::mapEntityToDto)
                 .toList();
         log.debug("Fetched {} authors", authors.size());
@@ -28,8 +30,8 @@ public class AuthorService {
 
     public AuthorDto createAuthor(AuthorDto authorDto) {
         log.debug("Creating author");
-        com.example.rlibrarybackend.model.Author entity = mapDtoToEntity(authorDto);
-        com.example.rlibrarybackend.model.Author saved = authorRepository.save(entity);
+        Author entity = mapDtoToEntity(authorDto);
+        Author saved = authorRepository.save(entity);
         log.info("Created author id={}", saved.getId());
         return mapEntityToDto(saved);
     }
@@ -50,7 +52,7 @@ public class AuthorService {
         return true;
     }
 
-    private AuthorDto mapEntityToDto(com.example.rlibrarybackend.model.Author author) {
+    private AuthorDto mapEntityToDto(Author author) {
         AuthorDto dto = new AuthorDto();
         dto.setId(author.getId() != null ? author.getId().longValue() : null);
         dto.setFirstName(author.getFirstName());
@@ -58,8 +60,8 @@ public class AuthorService {
         return dto;
     }
 
-    private com.example.rlibrarybackend.model.Author mapDtoToEntity(AuthorDto dto) {
-        com.example.rlibrarybackend.model.Author entity = new com.example.rlibrarybackend.model.Author();
+    private Author mapDtoToEntity(AuthorDto dto) {
+        Author entity = new Author();
         if (dto.getId() != null) {
             entity.setId(dto.getId().intValue());
         }

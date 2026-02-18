@@ -27,9 +27,11 @@ public class LibraryController implements LibrariesApi {
     }
 
     @Override
-    public ResponseEntity<List<LibraryDto>> librariesGet() {
-        log.info("GET /libraries requested");
-        List<LibraryDto> libraries = libraryService.getAllLibraries();
+    public ResponseEntity<List<LibraryDto>> librariesGet(Integer page, Integer size) {
+        int p = page != null ? page : 0;
+        int s = size != null ? size : 20;
+        log.info("GET /libraries requested page={} size={}", p, s);
+        List<LibraryDto> libraries = libraryService.getAllLibraries(p, s);
         log.debug("GET /libraries returned {} items", libraries.size());
         return ResponseEntity.ok(libraries);
     }
@@ -69,13 +71,15 @@ public class LibraryController implements LibrariesApi {
     }
 
     @Override
-    public ResponseEntity<List<BookDto>> librariesIdBooksGet(Long id) {
-        log.info("GET /libraries/{}/books requested", id);
+    public ResponseEntity<List<BookDto>> librariesIdBooksGet(Long id, Integer page, Integer size) {
+        int p = page != null ? page : 0;
+        int s = size != null ? size : 20;
+        log.info("GET /libraries/{}/books requested page={} size={}", id, p, s);
         if (libraryService.findLibraryById(id).isEmpty()) {
             log.warn("GET /libraries/{}/books not found", id);
             return ResponseEntity.notFound().build();
         }
-        List<BookDto> books = bookService.getBooksByLibraryId(id);
+        List<BookDto> books = bookService.getBooksByLibraryId(id, p, s);
         log.debug("GET /libraries/{}/books returned {} items", id, books.size());
         return ResponseEntity.ok(books);
     }

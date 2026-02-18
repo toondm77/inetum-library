@@ -23,9 +23,11 @@ public class PersonController implements PersonsApi {
     }
 
     @Override
-    public ResponseEntity<List<PersonDto>> personsGet() {
-        log.info("GET /persons requested");
-        List<PersonDto> persons = personService.getAllPersons();
+    public ResponseEntity<List<PersonDto>> personsGet(Integer page, Integer size) {
+        int p = page != null ? page : 0;
+        int s = size != null ? size : 20;
+        log.info("GET /persons requested page={} size={}", p, s);
+        List<PersonDto> persons = personService.getAllPersons(p, s);
         log.debug("GET /persons returned {} items", persons.size());
         return ResponseEntity.ok(persons);
     }
