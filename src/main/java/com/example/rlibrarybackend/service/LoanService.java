@@ -2,6 +2,7 @@ package com.example.rlibrarybackend.service;
 
 import com.example.rlibrarybackend.model.Loan;
 import com.example.rlibrarybackend.repository.LoanRepository;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -20,7 +21,7 @@ public class LoanService {
         this.loanRepository = loanRepository;
     }
 
-    public List<Loan> getAllLoans(int page, int size, String sort, String direction, String status, Long personId, LocalDate loanDateFrom, LocalDate loanDateTo) {
+    public Page<Loan> getAllLoans(int page, int size, String sort, String direction, String status, Long personId, LocalDate loanDateFrom, LocalDate loanDateTo) {
         log.debug("Fetching all loans page={} size={} sort={} direction={} status={} personId={} loanDateFrom={} loanDateTo={}", page, size, sort, direction, status, personId, loanDateFrom, loanDateTo);
         Specification<Loan> spec = Specification.where(null);
         if (status != null && !status.isBlank()) {
@@ -36,8 +37,8 @@ public class LoanService {
             spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("loanDate"), loanDateTo));
         }
         Sort sortOrder = Sort.by(Sort.Direction.fromString(direction != null ? direction : "asc"), sort != null && !sort.isBlank() ? sort : "loanDate");
-        List<Loan> loans = loanRepository.findAll(spec, PageRequest.of(page, size, sortOrder)).getContent();
-        log.debug("Fetched {} loans", loans.size());
+        Page<Loan> loans = loanRepository.findAll(spec, PageRequest.of(page, size, sortOrder));
+        log.debug("Fetched {} loans", loans.getContent().size());
         return loans;
     }
 

@@ -54,6 +54,7 @@ class LibraryServiceTest {
     void createLibrary_throwsConflict_whenIdExists() {
         dto.setId(99L);
         when(libraryRepository.existsById(99)).thenReturn(true);
+        when(libraryRepository.findByName(dto.getName())).thenReturn(Optional.empty());
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> libraryService.createLibrary(dto));
         assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
@@ -63,7 +64,7 @@ class LibraryServiceTest {
     @Test
     void createLibrary_throwsConflict_whenDataIntegrityViolation() {
         when(libraryRepository.findByName("Central Library")).thenReturn(Optional.empty());
-        when(libraryRepository.save(any(Library.class))).thenThrow(new DataIntegrityViolationException("duplicate"));
+        when(libraryRepository.save(any(Library.class))).thenThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate"));
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> libraryService.createLibrary(dto));
         assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
@@ -80,7 +81,6 @@ class LibraryServiceTest {
         saved.setStreetNumber(dto.getStreetNumber());
 
         when(libraryRepository.findByName(dto.getName())).thenReturn(Optional.empty());
-        when(libraryRepository.existsById(1)).thenReturn(false);
         when(libraryRepository.save(any(Library.class))).thenReturn(saved);
 
         LibraryDto result = libraryService.createLibrary(dto);
@@ -89,4 +89,3 @@ class LibraryServiceTest {
         verify(libraryRepository).save(any(Library.class));
     }
 }
-

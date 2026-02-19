@@ -3,29 +3,39 @@ package com.example.rlibrarybackend.service;
 import com.example.rlibrarybackend.dto.BookDto;
 import com.example.rlibrarybackend.model.Author;
 import com.example.rlibrarybackend.model.Book;
+import com.example.rlibrarybackend.model.Library;
+import com.example.rlibrarybackend.repository.AuthorRepository;
 import com.example.rlibrarybackend.repository.BookRepository;
 import com.example.rlibrarybackend.repository.LibraryRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
+
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Service
 @Slf4j
 public class BookService {
     private final BookRepository bookRepository;
     private final LibraryRepository libraryRepository;
+    private final AuthorRepository authorRepository;
 
-    public BookService(BookRepository bookRepository, LibraryRepository libraryRepository) {
+    public BookService(BookRepository bookRepository, LibraryRepository libraryRepository, AuthorRepository authorRepository) {
         this.bookRepository = bookRepository;
         this.libraryRepository = libraryRepository;
+        this.authorRepository = authorRepository;
     }
 
-    public List<BookDto> getAllBooks(int page, int size, String sort, String direction, String title, Long libraryId) {
+    public Page<BookDto> getAllBooks(int page, int size, String sort, String direction, String title, Long libraryId) {
         log.debug("Fetching all books page={} size={} sort={} direction={} title={} libraryId={}", page, size, sort, direction, title, libraryId);
         Specification<Book> spec = Specification.where(null);
         if (title != null && !title.isBlank()) {
@@ -35,11 +45,8 @@ public class BookService {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("library").get("id"), libraryId.intValue()));
         }
         Sort sortOrder = Sort.by(Sort.Direction.fromString(direction != null ? direction : "asc"), sort != null && !sort.isBlank() ? sort : "title");
-        List<BookDto> books = bookRepository.findAll(spec, PageRequest.of(page, size, sortOrder)).stream()
-                .map(this::mapEntityToDto)
-                .toList();
-        log.debug("Fetched {} books", books.size());
-        return books;
+        return bookRepository.findAll(spec, PageRequest.of(page, size, sortOrder))
+                .map(this::mapEntityToDto);
     }
 
     public List<BookDto> getAllBooks() {
@@ -58,24 +65,53 @@ public class BookService {
                 .or(Optional::empty);
     }
 
-    public Optional<BookDto> createBook(BookDto bookDto) {
-        if (bookDto.getLibraryId() != null
-                && !libraryRepository.existsById(bookDto.getLibraryId().intValue())) {
-            log.warn("Create book failed: library id={} not found", bookDto.getLibraryId());
-            return Optional.empty();
-        }
-        Book entity = mapDtoToEntity(bookDto);
-        Book saved = bookRepository.save(entity);
-        log.info("Created book id={}", saved.getId());
-        return Optional.of(mapEntityToDto(saved));
+
+    public boolean deleteBook(Long id) {
+        log.info("Deleting book id={}", id);
+        return bookRepository.findById(id.intValue())
+                .map(entity -> {
+                    bookRepository.delete(entity);
+                    log.info("Deleted book id={}", id);
+                    return true;
+                })
+                .orElseGet(() -> {
+                    log.warn("Delete book failed: id={} not found", id);
+                    return false;
+                });
     }
 
-    public List<BookDto> getBooksByLibraryId(Long libraryId, int page, int size) {
+    public BookDto createBook(BookDto bookDto) {
+        if (bookDto == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "Book payload is required");
+        }
+
+        if (bookDto.getLibraryId() == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "Library id is required");
+        }
+        Library library = libraryRepository.findById(bookDto.getLibraryId().intValue())
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Library not found"));
+
+        if (bookDto.getAuthorId() == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "Author id is required");
+        }
+        Author author = authorRepository.findById(bookDto.getAuthorId().intValue())
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Author not found"));
+
+        if (bookDto.getPublishedYear() == null || bookDto.getPublishedYear() < 1400 || bookDto.getPublishedYear() > 2100) {
+            throw new ResponseStatusException(BAD_REQUEST, "Published year must be between 1400 and 2100");
+        }
+
+        Book entity = mapDtoToEntity(bookDto, library, author);
+        Book saved = bookRepository.save(entity);
+        log.info("Created book id={}", saved.getId());
+        return mapEntityToDto(saved);
+    }
+
+    public Page<BookDto> getBooksByLibraryId(Long libraryId, int page, int size) {
         log.debug("Fetching books for library id={} page={} size={}", libraryId, page, size);
-        List<BookDto> books = bookRepository.findByLibraryId(libraryId.intValue(), PageRequest.of(page, size)).stream()
-                .map(this::mapEntityToDto)
-                .toList();
-        log.debug("Fetched {} books for library id={}", books.size(), libraryId);
+        Page<BookDto> books = bookRepository.findByLibraryId(libraryId.intValue(), PageRequest.of(page, size))
+                .map(this::mapEntityToDto);
+        log.debug("Fetched {} books for library id={}", books.getContent().size(), libraryId);
         return books;
     }
 
@@ -115,18 +151,20 @@ public class BookService {
         return dto;
     }
 
-    private Book mapDtoToEntity(BookDto dto) {
+    private Book mapDtoToEntity(BookDto dto, Library library, Author author) {
         Book book = new Book();
         if (dto.getId() != null) {
             book.setId(dto.getId().intValue());
         }
         book.setTitle(dto.getTitle());
         book.setIsbn(dto.getIsbn());
-        book.setPublicationYear(dto.getPublishedYear() != null ? dto.getPublishedYear() : 0);
-        if (dto.getLibraryId() != null) {
-            libraryRepository.findById(dto.getLibraryId().intValue())
-                    .ifPresent(book::setLibrary);
-        }
+        book.setPublicationYear(dto.getPublishedYear());
+        book.setLibrary(library);
+        book.setAuthor(author.getFirstName() + " " + author.getLastName());
+        book.setAuthors(List.of(author));
+        // provide safe defaults for required numeric fields not exposed in DTO
+        book.setAmountOfPages(1);
+        book.setDupplicates(0);
         return book;
     }
 }

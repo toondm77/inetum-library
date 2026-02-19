@@ -4,6 +4,7 @@ import com.example.rlibrarybackend.dto.LibraryDto;
 import com.example.rlibrarybackend.model.Library;
 import com.example.rlibrarybackend.repository.LibraryRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -23,7 +24,7 @@ public class LibraryService {
         this.libraryRepository = libraryRepository;
     }
 
-    public List<LibraryDto> getAllLibraries(int page, int size, String sort, String direction, String name, String city) {
+    public Page<LibraryDto> getAllLibraries(int page, int size, String sort, String direction, String name, String city) {
         log.debug("Fetching all libraries page={} size={} sort={} direction={} name={} city={}", page, size, sort, direction, name, city);
         Specification<Library> spec = Specification.where(null);
         if (name != null && !name.isBlank()) {
@@ -33,11 +34,8 @@ public class LibraryService {
             spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("city")), "%%" + city.toLowerCase() + "%%"));
         }
         Sort sortOrder = Sort.by(Sort.Direction.fromString(direction != null ? direction : "asc"), sort != null && !sort.isBlank() ? sort : "name");
-        List<LibraryDto> libraries = libraryRepository.findAll(spec, PageRequest.of(page, size, sortOrder)).stream()
-                .map(this::mapEntityToDto)
-                .toList();
-        log.debug("Fetched {} libraries", libraries.size());
-        return libraries;
+        return libraryRepository.findAll(spec, PageRequest.of(page, size, sortOrder))
+                .map(this::mapEntityToDto);
     }
 
     public List<LibraryDto> getAllLibraries() {
@@ -55,15 +53,23 @@ public class LibraryService {
     }
 
     public LibraryDto createLibrary(LibraryDto dto) {
-        // Check if library with same name already exists
         if (dto.getName() != null && libraryRepository.findByName(dto.getName()).isPresent()) {
             log.warn("Create library failed: name '{}' already exists", dto.getName());
             throw new ResponseStatusException(HttpStatus.CONFLICT, "A library with this name already exists");
         }
+        if (dto.getId() != null && libraryRepository.existsById(dto.getId().intValue())) {
+            log.warn("Create library failed: id '{}' already exists", dto.getId());
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "A library with this id already exists");
+        }
         Library entity = mapDtoToEntity(dto);
-        Library saved = libraryRepository.save(entity);
-        log.info("Created library id={} name='{}'", saved.getId(), saved.getName());
-        return mapEntityToDto(saved);
+        try {
+            Library saved = libraryRepository.save(entity);
+            log.info("Created library id={} name='{}'", saved.getId(), saved.getName());
+            return mapEntityToDto(saved);
+        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+            log.warn("Create library failed: DataIntegrityViolationException");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "A library with this data already exists", ex);
+        }
     }
 
     public boolean deleteLibrary(Long id) {

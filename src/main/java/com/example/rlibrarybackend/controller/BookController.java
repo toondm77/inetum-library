@@ -2,13 +2,17 @@ package com.example.rlibrarybackend.controller;
 
 import com.example.rlibrarybackend.api.BooksApi;
 import com.example.rlibrarybackend.dto.BookDto;
+import com.example.rlibrarybackend.dto.PagedBookResponse;
 import com.example.rlibrarybackend.service.BookService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -23,15 +27,22 @@ public class BookController implements BooksApi {
     }
 
     @Override
-    public ResponseEntity<List<BookDto>> booksGet(Integer page, Integer size, String sort, String direction, String title, Long libraryId) {
+    public ResponseEntity<PagedBookResponse> booksGet(Integer page, Integer size, String sort, String direction, String title, Long libraryId) {
         int p = page != null ? page : 0;
         int s = size != null ? size : 20;
         String sortField = (sort != null && !sort.isBlank()) ? sort : "title";
         String dir = (direction != null && !direction.isBlank()) ? direction : "asc";
         log.info("GET /books requested page={} size={} sort={} direction={}", p, s, sortField, dir);
-        List<BookDto> books = bookService.getAllBooks(p, s, sortField, dir, title, libraryId);
-        log.debug("GET /books returned {} items", books.size());
-        return ResponseEntity.ok(books);
+        Page<BookDto> booksPage = bookService.getAllBooks(p, s, sortField, dir, title, libraryId);
+        PagedBookResponse response = new PagedBookResponse(
+                booksPage.getNumber(),
+                booksPage.getSize(),
+                booksPage.getTotalElements(),
+                booksPage.getTotalPages(),
+                booksPage.getContent()
+        );
+        log.debug("GET /books returned {} items", booksPage.getContent().size());
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -49,16 +60,21 @@ public class BookController implements BooksApi {
     }
 
     @Override
-    public ResponseEntity<BookDto> booksPost(BookDto bookDto) {
+    public ResponseEntity<BookDto> booksPost(@Valid @RequestBody BookDto bookDto) {
         log.info("POST /books requested");
-        return bookService.createBook(bookDto)
-                .map(created -> {
-                    log.info("POST /books created id={}", created.getId());
-                    return ResponseEntity.status(HttpStatus.CREATED).body(created);
-                })
-                .orElseGet(() -> {
-                    log.warn("POST /books failed: library not found");
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-                });
+        BookDto created = bookService.createBook(bookDto);
+        log.info("POST /books created id={}", created.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @Override
+    public ResponseEntity<Void> booksIdDelete(Long id) {
+        log.info("DELETE /books/{} requested", id);
+        boolean deleted = bookService.deleteBook(id);
+        if (deleted) {
+            return ResponseEntity.noContent().build();
+        }
+        log.warn("DELETE /books/{} not found", id);
+        return ResponseEntity.notFound().build();
     }
 }

@@ -55,9 +55,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AuthorDto'
+                $ref: '#/components/schemas/PagedAuthorResponse'
     post:
       summary: Create a new author
       operationId: authorsPost
@@ -164,9 +162,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/BookDto'
+                $ref: '#/components/schemas/PagedBookResponse'
     post:
       summary: Create a new book
       operationId: booksPost
@@ -211,6 +207,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BookDto'
+        '404':
+          description: Book not found
+    delete:
+      summary: Delete book by ID
+      operationId: booksIdDelete
+      tags:
+        - Book
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Book deleted
         '404':
           description: Book not found
   /libraries:
@@ -261,9 +274,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/LibraryDto'
+                $ref: '#/components/schemas/PagedLibraryResponse'
     post:
       summary: Create a new library
       operationId: librariesPost
@@ -358,9 +369,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/BookDto'
+                $ref: '#/components/schemas/PagedBookResponse'
         '404':
           description: Library not found
   /loans:
@@ -424,9 +433,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/LoanDto'
+                $ref: '#/components/schemas/PagedLoanResponse'
     post:
       summary: Create a new loan
       operationId: loansPost
@@ -532,9 +539,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PersonDto'
+                $ref: '#/components/schemas/PagedPersonResponse'
     post:
       summary: Create a new person
       operationId: personsPost
@@ -800,3 +805,128 @@ components:
           items:
             type: integer
             format: int64
+    PagedAuthorResponse:
+      type: object
+      required:
+        - page
+        - size
+        - totalElements
+        - totalPages
+        - items
+      properties:
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          minimum: 0
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthorDto'
+    PagedBookResponse:
+      type: object
+      required:
+        - page
+        - size
+        - totalElements
+        - totalPages
+        - items
+      properties:
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          minimum: 0
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookDto'
+    PagedLibraryResponse:
+      type: object
+      required:
+        - page
+        - size
+        - totalElements
+        - totalPages
+        - items
+      properties:
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          minimum: 0
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LibraryDto'
+    PagedLoanResponse:
+      type: object
+      required:
+        - page
+        - size
+        - totalElements
+        - totalPages
+        - items
+      properties:
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          minimum: 0
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LoanDto'
+    PagedPersonResponse:
+      type: object
+      required:
+        - page
+        - size
+        - totalElements
+        - totalPages
+        - items
+      properties:
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          minimum: 0
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonDto'
