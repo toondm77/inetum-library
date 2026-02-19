@@ -3,9 +3,12 @@ package com.example.rlibrarybackend.controller;
 import com.example.rlibrarybackend.api.LibrariesApi;
 import com.example.rlibrarybackend.dto.BookDto;
 import com.example.rlibrarybackend.dto.LibraryDto;
+import com.example.rlibrarybackend.dto.PagedBookResponse;
+import com.example.rlibrarybackend.dto.PagedLibraryResponse;
 import com.example.rlibrarybackend.service.BookService;
 import com.example.rlibrarybackend.service.LibraryService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,15 +31,22 @@ public class LibraryController implements LibrariesApi {
     }
 
     @Override
-    public ResponseEntity<List<LibraryDto>> librariesGet(Integer page, Integer size, String sort, String direction, String name, String city) {
+    public ResponseEntity<PagedLibraryResponse> librariesGet(Integer page, Integer size, String sort, String direction, String name, String city) {
         int p = page != null ? page : 0;
         int s = size != null ? size : 20;
         String sortField = (sort != null && !sort.isBlank()) ? sort : "name";
         String dir = (direction != null && !direction.isBlank()) ? direction : "asc";
         log.info("GET /libraries requested page={} size={} sort={} direction={}", p, s, sortField, dir);
-        List<LibraryDto> libraries = libraryService.getAllLibraries(p, s, sortField, dir, name, city);
-        log.debug("GET /libraries returned {} items", libraries.size());
-        return ResponseEntity.ok(libraries);
+        Page<LibraryDto> librariesPage = libraryService.getAllLibraries(p, s, sortField, dir, name, city);
+        PagedLibraryResponse response = new PagedLibraryResponse(
+                librariesPage.getNumber(),
+                librariesPage.getSize(),
+                librariesPage.getTotalElements(),
+                librariesPage.getTotalPages(),
+                librariesPage.getContent()
+        );
+        log.debug("GET /libraries returned {} items", librariesPage.getContent().size());
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -74,7 +84,7 @@ public class LibraryController implements LibrariesApi {
     }
 
     @Override
-    public ResponseEntity<List<BookDto>> librariesIdBooksGet(Long id, Integer page, Integer size) {
+    public ResponseEntity<PagedBookResponse> librariesIdBooksGet(Long id, Integer page, Integer size) {
         int p = page != null ? page : 0;
         int s = size != null ? size : 20;
         log.info("GET /libraries/{}/books requested page={} size={}", id, p, s);
@@ -82,8 +92,15 @@ public class LibraryController implements LibrariesApi {
             log.warn("GET /libraries/{}/books not found", id);
             return ResponseEntity.notFound().build();
         }
-        List<BookDto> books = bookService.getBooksByLibraryId(id, p, s);
-        log.debug("GET /libraries/{}/books returned {} items", id, books.size());
-        return ResponseEntity.ok(books);
+        Page<BookDto> booksPage = bookService.getBooksByLibraryId(id, p, s);
+        PagedBookResponse response = new PagedBookResponse(
+                booksPage.getNumber(),
+                booksPage.getSize(),
+                booksPage.getTotalElements(),
+                booksPage.getTotalPages(),
+                booksPage.getContent()
+        );
+        log.debug("GET /libraries/{}/books returned {} items", id, booksPage.getContent().size());
+        return ResponseEntity.ok(response);
     }
 }

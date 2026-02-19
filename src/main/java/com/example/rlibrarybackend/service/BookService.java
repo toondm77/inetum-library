@@ -8,6 +8,7 @@ import com.example.rlibrarybackend.repository.AuthorRepository;
 import com.example.rlibrarybackend.repository.BookRepository;
 import com.example.rlibrarybackend.repository.LibraryRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -34,7 +35,7 @@ public class BookService {
         this.authorRepository = authorRepository;
     }
 
-    public List<BookDto> getAllBooks(int page, int size, String sort, String direction, String title, Long libraryId) {
+    public Page<BookDto> getAllBooks(int page, int size, String sort, String direction, String title, Long libraryId) {
         log.debug("Fetching all books page={} size={} sort={} direction={} title={} libraryId={}", page, size, sort, direction, title, libraryId);
         Specification<Book> spec = Specification.where(null);
         if (title != null && !title.isBlank()) {
@@ -44,11 +45,8 @@ public class BookService {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("library").get("id"), libraryId.intValue()));
         }
         Sort sortOrder = Sort.by(Sort.Direction.fromString(direction != null ? direction : "asc"), sort != null && !sort.isBlank() ? sort : "title");
-        List<BookDto> books = bookRepository.findAll(spec, PageRequest.of(page, size, sortOrder)).stream()
-                .map(this::mapEntityToDto)
-                .toList();
-        log.debug("Fetched {} books", books.size());
-        return books;
+        return bookRepository.findAll(spec, PageRequest.of(page, size, sortOrder))
+                .map(this::mapEntityToDto);
     }
 
     public List<BookDto> getAllBooks() {
@@ -109,12 +107,11 @@ public class BookService {
         return mapEntityToDto(saved);
     }
 
-    public List<BookDto> getBooksByLibraryId(Long libraryId, int page, int size) {
+    public Page<BookDto> getBooksByLibraryId(Long libraryId, int page, int size) {
         log.debug("Fetching books for library id={} page={} size={}", libraryId, page, size);
-        List<BookDto> books = bookRepository.findByLibraryId(libraryId.intValue(), PageRequest.of(page, size)).stream()
-                .map(this::mapEntityToDto)
-                .toList();
-        log.debug("Fetched {} books for library id={}", books.size(), libraryId);
+        Page<BookDto> books = bookRepository.findByLibraryId(libraryId.intValue(), PageRequest.of(page, size))
+                .map(this::mapEntityToDto);
+        log.debug("Fetched {} books for library id={}", books.getContent().size(), libraryId);
         return books;
     }
 

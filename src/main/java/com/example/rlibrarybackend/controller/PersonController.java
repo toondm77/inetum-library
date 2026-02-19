@@ -2,8 +2,10 @@ package com.example.rlibrarybackend.controller;
 
 import com.example.rlibrarybackend.api.PersonsApi;
 import com.example.rlibrarybackend.dto.PersonDto;
+import com.example.rlibrarybackend.dto.PagedPersonResponse;
 import com.example.rlibrarybackend.service.PersonService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,15 +25,22 @@ public class PersonController implements PersonsApi {
     }
 
     @Override
-    public ResponseEntity<List<PersonDto>> personsGet(Integer page, Integer size, String sort, String direction, String lastName, String accountStatus) {
+    public ResponseEntity<PagedPersonResponse> personsGet(Integer page, Integer size, String sort, String direction, String lastName, String accountStatus) {
         int p = page != null ? page : 0;
         int s = size != null ? size : 20;
         String sortField = (sort != null && !sort.isBlank()) ? sort : "lastName";
         String dir = (direction != null && !direction.isBlank()) ? direction : "asc";
         log.info("GET /persons requested page={} size={} sort={} direction={}", p, s, sortField, dir);
-        List<PersonDto> persons = personService.getAllPersons(p, s, sortField, dir, lastName, accountStatus);
-        log.debug("GET /persons returned {} items", persons.size());
-        return ResponseEntity.ok(persons);
+        Page<PersonDto> personsPage = personService.getAllPersons(p, s, sortField, dir, lastName, accountStatus);
+        PagedPersonResponse response = new PagedPersonResponse(
+                personsPage.getNumber(),
+                personsPage.getSize(),
+                personsPage.getTotalElements(),
+                personsPage.getTotalPages(),
+                personsPage.getContent()
+        );
+        log.debug("GET /persons returned {} items", personsPage.getContent().size());
+        return ResponseEntity.ok(response);
     }
 
     @Override

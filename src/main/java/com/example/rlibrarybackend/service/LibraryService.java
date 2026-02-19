@@ -4,6 +4,7 @@ import com.example.rlibrarybackend.dto.LibraryDto;
 import com.example.rlibrarybackend.model.Library;
 import com.example.rlibrarybackend.repository.LibraryRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -23,7 +24,7 @@ public class LibraryService {
         this.libraryRepository = libraryRepository;
     }
 
-    public List<LibraryDto> getAllLibraries(int page, int size, String sort, String direction, String name, String city) {
+    public Page<LibraryDto> getAllLibraries(int page, int size, String sort, String direction, String name, String city) {
         log.debug("Fetching all libraries page={} size={} sort={} direction={} name={} city={}", page, size, sort, direction, name, city);
         Specification<Library> spec = Specification.where(null);
         if (name != null && !name.isBlank()) {
@@ -33,11 +34,8 @@ public class LibraryService {
             spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("city")), "%%" + city.toLowerCase() + "%%"));
         }
         Sort sortOrder = Sort.by(Sort.Direction.fromString(direction != null ? direction : "asc"), sort != null && !sort.isBlank() ? sort : "name");
-        List<LibraryDto> libraries = libraryRepository.findAll(spec, PageRequest.of(page, size, sortOrder)).stream()
-                .map(this::mapEntityToDto)
-                .toList();
-        log.debug("Fetched {} libraries", libraries.size());
-        return libraries;
+        return libraryRepository.findAll(spec, PageRequest.of(page, size, sortOrder))
+                .map(this::mapEntityToDto);
     }
 
     public List<LibraryDto> getAllLibraries() {

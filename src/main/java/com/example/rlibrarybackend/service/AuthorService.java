@@ -4,6 +4,7 @@ import com.example.rlibrarybackend.dto.AuthorDto;
 import com.example.rlibrarybackend.model.Author;
 import com.example.rlibrarybackend.repository.AuthorRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -22,7 +23,7 @@ public class AuthorService {
         this.authorRepository = authorRepository;
     }
 
-    public List<AuthorDto> getAllAuthors(int page, int size, String sort, String direction, String lastName, String nationality) {
+    public Page<AuthorDto> getAllAuthors(int page, int size, String sort, String direction, String lastName, String nationality) {
         log.debug("Fetching authors page={} size={} sort={} direction={} lastName={} nationality={}", page, size, sort, direction, lastName, nationality);
         Specification<Author> spec = Specification.where(null);
         if (lastName != null && !lastName.isBlank()) {
@@ -32,11 +33,8 @@ public class AuthorService {
             spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("nationality")), "%%" + nationality.toLowerCase() + "%%"));
         }
         Sort sortOrder = Sort.by(Sort.Direction.fromString(direction != null ? direction : "asc"), sort != null && !sort.isBlank() ? sort : "id");
-        List<AuthorDto> authors = authorRepository.findAll(spec, PageRequest.of(page, size, sortOrder)).stream()
-                .map(this::mapEntityToDto)
-                .toList();
-        log.debug("Fetched {} authors", authors.size());
-        return authors;
+        return authorRepository.findAll(spec, PageRequest.of(page, size, sortOrder))
+                .map(this::mapEntityToDto);
     }
 
     public List<AuthorDto> getAllAuthors(int page, int size) {

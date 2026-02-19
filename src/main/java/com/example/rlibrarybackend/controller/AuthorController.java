@@ -2,8 +2,10 @@ package com.example.rlibrarybackend.controller;
 
 import com.example.rlibrarybackend.api.AuthorsApi;
 import com.example.rlibrarybackend.dto.AuthorDto;
+import com.example.rlibrarybackend.dto.PagedAuthorResponse;
 import com.example.rlibrarybackend.service.AuthorService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,15 +25,22 @@ public class AuthorController implements AuthorsApi {
     }
 
     @Override
-    public ResponseEntity<List<AuthorDto>> authorsGet(Integer page, Integer size, String sort, String direction, String lastName, String nationality) {
+    public ResponseEntity<PagedAuthorResponse> authorsGet(Integer page, Integer size, String sort, String direction, String lastName, String nationality) {
         int p = page != null ? page : 0;
         int s = size != null ? size : 20;
         String sortField = (sort != null && !sort.isBlank()) ? sort : "id";
         String dir = (direction != null && !direction.isBlank()) ? direction : "asc";
         log.info("GET /authors requested page={} size={} sort={} direction={}", p, s, sortField, dir);
-        List<AuthorDto> authors = authorService.getAllAuthors(p, s, sortField, dir, lastName, nationality);
-        log.debug("GET /authors returned {} items", authors.size());
-        return ResponseEntity.ok(authors);
+        Page<AuthorDto> authorsPage = authorService.getAllAuthors(p, s, sortField, dir, lastName, nationality);
+        PagedAuthorResponse response = new PagedAuthorResponse(
+                authorsPage.getNumber(),
+                authorsPage.getSize(),
+                authorsPage.getTotalElements(),
+                authorsPage.getTotalPages(),
+                authorsPage.getContent()
+        );
+        log.debug("GET /authors returned {} items", authorsPage.getContent().size());
+        return ResponseEntity.ok(response);
     }
 
     @Override
