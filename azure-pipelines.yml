@@ -1,0 +1,24 @@
+trigger:
+- master
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: Maven@3
+  inputs:
+    mavenPomFile: 'pom.xml'
+    mavenOptions: '-Xmx3072m'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.17'  # CHANGED: RLibrary uses Java 17
+    jdkArchitectureOption: 'x64'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    goals: 'package'
+
+# Optional: Save the JAR file so you can download it later
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(System.DefaultWorkingDirectory)/target'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
