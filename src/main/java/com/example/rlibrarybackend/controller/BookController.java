@@ -6,9 +6,11 @@ import com.example.rlibrarybackend.service.BookService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -49,16 +51,21 @@ public class BookController implements BooksApi {
     }
 
     @Override
-    public ResponseEntity<BookDto> booksPost(BookDto bookDto) {
+    public ResponseEntity<BookDto> booksPost(@Valid @RequestBody BookDto bookDto) {
         log.info("POST /books requested");
-        return bookService.createBook(bookDto)
-                .map(created -> {
-                    log.info("POST /books created id={}", created.getId());
-                    return ResponseEntity.status(HttpStatus.CREATED).body(created);
-                })
-                .orElseGet(() -> {
-                    log.warn("POST /books failed: library not found");
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-                });
+        BookDto created = bookService.createBook(bookDto);
+        log.info("POST /books created id={}", created.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @Override
+    public ResponseEntity<Void> booksIdDelete(Long id) {
+        log.info("DELETE /books/{} requested", id);
+        boolean deleted = bookService.deleteBook(id);
+        if (deleted) {
+            return ResponseEntity.noContent().build();
+        }
+        log.warn("DELETE /books/{} not found", id);
+        return ResponseEntity.notFound().build();
     }
 }

@@ -213,6 +213,23 @@ paths:
                 $ref: '#/components/schemas/BookDto'
         '404':
           description: Book not found
+    delete:
+      summary: Delete book by ID
+      operationId: booksIdDelete
+      tags:
+        - Book
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Book deleted
+        '404':
+          description: Book not found
   /libraries:
     get:
       summary: Get all libraries
