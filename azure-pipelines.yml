@@ -1,4 +1,5 @@
 trigger:
+- develop
 - master
 
 pool:
@@ -10,13 +11,12 @@ steps:
     mavenPomFile: 'pom.xml'
     mavenOptions: '-Xmx3072m'
     javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.17'  # CHANGED: RLibrary uses Java 17
+    jdkVersionOption: '1.21'  # Explicitly use JDK 21
     jdkArchitectureOption: 'x64'
     publishJUnitResults: true
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
     goals: 'package'
 
-# Optional: Save the JAR file so you can download it later
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(System.DefaultWorkingDirectory)/target'
