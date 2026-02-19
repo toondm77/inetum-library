@@ -55,15 +55,23 @@ public class LibraryService {
     }
 
     public LibraryDto createLibrary(LibraryDto dto) {
-        // Check if library with same name already exists
         if (dto.getName() != null && libraryRepository.findByName(dto.getName()).isPresent()) {
             log.warn("Create library failed: name '{}' already exists", dto.getName());
             throw new ResponseStatusException(HttpStatus.CONFLICT, "A library with this name already exists");
         }
+        if (dto.getId() != null && libraryRepository.existsById(dto.getId().intValue())) {
+            log.warn("Create library failed: id '{}' already exists", dto.getId());
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "A library with this id already exists");
+        }
         Library entity = mapDtoToEntity(dto);
-        Library saved = libraryRepository.save(entity);
-        log.info("Created library id={} name='{}'", saved.getId(), saved.getName());
-        return mapEntityToDto(saved);
+        try {
+            Library saved = libraryRepository.save(entity);
+            log.info("Created library id={} name='{}'", saved.getId(), saved.getName());
+            return mapEntityToDto(saved);
+        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+            log.warn("Create library failed: DataIntegrityViolationException");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "A library with this data already exists", ex);
+        }
     }
 
     public boolean deleteLibrary(Long id) {

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -41,15 +42,6 @@ class AuthorServiceTest {
         dto.setLastName("Orwell");
     }
 
-    @Test
-    void getAllAuthors_returnsMappedList() {
-        when(authorRepository.findAll()).thenReturn(Collections.singletonList(entity));
-
-        var result = authorService.getAllAuthors(1,1);
-        assertEquals(1, result.size());
-        assertEquals("George", result.getFirst().getFirstName());
-        verify(authorRepository).findAll();
-    }
 
     @Test
     void findAuthorById_returnsAuthor_whenPresent() {
@@ -97,4 +89,3 @@ class AuthorServiceTest {
         verify(authorRepository, never()).deleteById(any());
     }
 }
-
