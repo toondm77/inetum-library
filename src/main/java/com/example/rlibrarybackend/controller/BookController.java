@@ -3,6 +3,7 @@ package com.example.rlibrarybackend.controller;
 import com.example.rlibrarybackend.api.BooksApi;
 import com.example.rlibrarybackend.dto.BookDto;
 import com.example.rlibrarybackend.dto.PagedBookResponse;
+import com.example.rlibrarybackend.dto.ThemeType;
 import com.example.rlibrarybackend.service.BookService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -27,13 +28,21 @@ public class BookController implements BooksApi {
     }
 
     @Override
-    public ResponseEntity<PagedBookResponse> booksGet(Integer page, Integer size, String sort, String direction, String title, Long libraryId) {
+    public ResponseEntity<PagedBookResponse> booksGet(Integer page, Integer size, String sort, String direction, String title, Integer minAmountOfPages, Integer maxAmountOfPages, ThemeType themeType, Long libraryId) {
         int p = page != null ? page : 0;
         int s = size != null ? size : 20;
         String sortField = (sort != null && !sort.isBlank()) ? sort : "title";
         String dir = (direction != null && !direction.isBlank()) ? direction : "asc";
-        log.info("GET /books requested page={} size={} sort={} direction={}", p, s, sortField, dir);
-        Page<BookDto> booksPage = bookService.getAllBooks(p, s, sortField, dir, title, libraryId);
+        log.info("GET /books requested page={} size={} sort={} direction={} minPages={} maxPages={}", p, s, sortField, dir, minAmountOfPages, maxAmountOfPages);
+        com.example.rlibrarybackend.model.ThemeType modelTheme = null;
+        if (themeType != null) {
+            try {
+                modelTheme = com.example.rlibrarybackend.model.ThemeType.valueOf(themeType.name());
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid theme type provided: {}", themeType);
+            }
+        }
+        Page<BookDto> booksPage = bookService.getAllBooks(p, s, sortField, dir, title, minAmountOfPages, maxAmountOfPages, modelTheme, libraryId);
         PagedBookResponse response = new PagedBookResponse(
                 booksPage.getNumber(),
                 booksPage.getSize(),
