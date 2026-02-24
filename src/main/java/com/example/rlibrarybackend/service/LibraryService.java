@@ -4,6 +4,7 @@ import com.example.rlibrarybackend.dto.LibraryDto;
 import com.example.rlibrarybackend.model.Library;
 import com.example.rlibrarybackend.repository.LibraryRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -66,7 +67,7 @@ public class LibraryService {
             Library saved = libraryRepository.save(entity);
             log.info("Created library id={} name='{}'", saved.getId(), saved.getName());
             return mapEntityToDto(saved);
-        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+        } catch (DataIntegrityViolationException ex) {
             log.warn("Create library failed: DataIntegrityViolationException");
             throw new ResponseStatusException(HttpStatus.CONFLICT, "A library with this data already exists", ex);
         }

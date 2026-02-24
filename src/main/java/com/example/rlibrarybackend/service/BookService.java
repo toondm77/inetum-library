@@ -4,6 +4,7 @@ import com.example.rlibrarybackend.dto.BookDto;
 import com.example.rlibrarybackend.model.Author;
 import com.example.rlibrarybackend.model.Book;
 import com.example.rlibrarybackend.model.Library;
+import com.example.rlibrarybackend.model.ThemeType;
 import com.example.rlibrarybackend.repository.AuthorRepository;
 import com.example.rlibrarybackend.repository.BookRepository;
 import com.example.rlibrarybackend.repository.LibraryRepository;
@@ -35,11 +36,20 @@ public class BookService {
         this.authorRepository = authorRepository;
     }
 
-    public Page<BookDto> getAllBooks(int page, int size, String sort, String direction, String title, Long libraryId) {
-        log.debug("Fetching all books page={} size={} sort={} direction={} title={} libraryId={}", page, size, sort, direction, title, libraryId);
+    public Page<BookDto> getAllBooks(int page, int size, String sort, String direction, String title, Integer minAmountOfPages, Integer maxAmountOfPages, ThemeType themeType, Long libraryId) {
+        log.debug("Fetching all books page={} size={} sort={} direction={} title={} minAmountOfPages={} maxAmountOfPages={} themeType={} libraryId={}", page, size, sort, direction, title, minAmountOfPages, maxAmountOfPages, themeType, libraryId);
         Specification<Book> spec = Specification.where(null);
         if (title != null && !title.isBlank()) {
             spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("title")), "%%" + title.toLowerCase() + "%%"));
+        }
+        if (minAmountOfPages != null) {
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("amountOfPages"), minAmountOfPages));
+        }
+        if (maxAmountOfPages != null) {
+            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("amountOfPages"), maxAmountOfPages));
+        }
+        if (themeType != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("theme"), themeType));
         }
         if (libraryId != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("library").get("id"), libraryId.intValue()));

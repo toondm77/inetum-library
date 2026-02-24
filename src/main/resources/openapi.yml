@@ -151,6 +151,21 @@ paths:
             type: string
           description: Filter by title (contains, case-insensitive)
         - in: query
+          name: minAmountOfPages
+          schema:
+            type: integer
+          description: Filter by minimum amount of pages
+        - in: query
+          name: maxAmountOfPages
+          schema:
+            type: integer
+          description: Filter by maximum amount of pages
+        - in: query
+          name: themeType
+          schema:
+            type: ThemeType
+          description: Filter by the theme
+        - in: query
           name: libraryId
           schema:
             type: integer
@@ -805,6 +820,15 @@ components:
           items:
             type: integer
             format: int64
+    ThemeType:
+      type: string
+      enum:
+        - FINANCE
+        - LAWS
+        - COMMUNICATION
+        - BUSINESS
+        - COMPUTERSCIENCE
+        - IT
     PagedAuthorResponse:
       type: object
       required:
