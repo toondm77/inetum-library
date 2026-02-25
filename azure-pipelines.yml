@@ -6,7 +6,7 @@ pool:
   vmImage: ubuntu-latest
 
 variables:
-  azureServiceConnection: 'sc_026_j_r_libraryo'
+  azureServiceConnection: 'sc_026_j_r_library'
   webAppName: 'WebAppRLibrary'
 
 steps:
