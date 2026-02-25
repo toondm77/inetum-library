@@ -5,6 +5,10 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
+variables:
+  azureServiceConnection: 'sc_026_j_r_libraryo'
+  webAppName: 'WebAppRLibrary'
+
 steps:
 - task: Maven@4
   inputs:
@@ -15,10 +19,27 @@ steps:
     jdkArchitectureOption: 'x64'
     publishJUnitResults: true
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    goals: 'package'
+    goals: 'clean package'
+
+- task: CopyFiles@2
+  displayName: 'Stage JAR for deployment'
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)/target'
+    Contents: '*.jar'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '$(System.DefaultWorkingDirectory)/target'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
     publishLocation: 'Container'
+
+- task: AzureWebApp@1
+  displayName: 'Deploy to Azure Web App'
+  inputs:
+    azureSubscription: '$(azureServiceConnection)'
+    appType: 'webAppLinux'
+    appName: '$(webAppName)'
+    package: '$(Build.ArtifactStagingDirectory)/*.jar'
+
+
