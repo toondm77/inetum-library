@@ -2,6 +2,7 @@ import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/cor
 import { toSignal } from '@angular/core/rxjs-interop';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '@auth0/auth0-angular';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -21,7 +22,7 @@ export class App {
   protected readonly apiError = signal<string | null>(null);
   protected readonly apiLoading = signal(false);
 
-  private readonly apiBase = 'http://localhost:8080/api';
+  private readonly apiBase = environment.apiBase;
 
   protected login(): void {
     this.auth.loginWithRedirect();
