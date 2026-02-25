@@ -1,0 +1,160 @@
+    <!-- Page content: search bar and filters -->
+    <main class="flex-1 space-y-10 px-8 py-8 w-full">
+      <div class="flex flex-wrap items-center gap-3 mb-6">
+        <!-- Search bar -->
+        <div class="relative flex min-w-[280px] flex-1 items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm">
+          <svg aria-hidden="true" viewBox="0 0 24 24" class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.6">
+            <circle cx="11" cy="11" r="6" />
+            <path stroke-linecap="round" d="m15.5 15.5 3 3" />
+          </svg>
+          <input
+            type="search"
+            [value]="searchQuery()"
+            (input)="onSearchInput($event)"
+            (keydown.enter)="onSearchSubmit()"
+            (blur)="closeSuggestions()"
+            placeholder="Zoek naar een boek..."
+            class="w-full border-none text-sm outline-none placeholder:text-slate-400"
+          />
+
+          @if (showSuggestions() && suggestions().length > 0) {
+            <div class="absolute inset-x-0 top-full z-50 mt-2 override-w overflow-hidden rounded-xl border border-slate-100 bg-white py-2 shadow-lg ring-1 ring-slate-900/5">
+              @for (suggestion of suggestions(); track suggestion) {
+                <button
+                  type="button"
+                  class="block w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                  (mousedown)="$event.preventDefault(); selectSuggestion(suggestion)"
+                >
+                  {{ suggestion }}
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- Thema's filter -->
+          <div class="relative">
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm"
+              (click)="toggleThemeFilter()"
+            >
+              3 thema's
+              <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+            @if (themeFilterOpen()) {
+              <div class="absolute right-0 z-20 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
+                <p class="mb-2 text-xs font-semibold uppercase text-slate-500">Kies thema's</p>
+                <div class="space-y-1 text-sm text-slate-700">
+                  <button type="button" class="flex w-full items-center gap-2 rounded-md px-2 py-1 hover:bg-slate-50" (click)="toggleThemeFilter()">Programmeren</button>
+                  <button type="button" class="flex w-full items-center gap-2 rounded-md px-2 py-1 hover:bg-slate-50" (click)="toggleThemeFilter()">Psychologie</button>
+                  <button type="button" class="flex w-full items-center gap-2 rounded-md px-2 py-1 hover:bg-slate-50" (click)="toggleThemeFilter()">Informatica</button>
+                  <button type="button" class="flex w-full items-center gap-2 rounded-md px-2 py-1 hover:bg-slate-50" (click)="toggleThemeFilter()">Literatuur</button>
+                  <button type="button" class="flex w-full items-center gap-2 rounded-md px-2 py-1 hover:bg-slate-50" (click)="toggleThemeFilter()">Business</button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Aantal paginas filter -->
+          <div class="relative">
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm"
+              (click)="togglePagesFilter()"
+            >
+              Aantal paginas
+              <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+            @if (pagesFilterOpen()) {
+              <div class="absolute right-0 z-20 mt-2 w-72 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
+                <p class="mb-2 text-xs font-semibold uppercase text-slate-500">Aantal paginas</p>
+                <div class="flex items-center justify-between text-xs text-slate-500">
+                  <span>Min 0</span>
+                  <span>Max 800</span>
+                </div>
+                <div class="mt-3 flex items-center gap-2">
+                  <input type="range" min="0" max="800" value="120" class="w-full" />
+                  <input type="range" min="0" max="800" value="620" class="w-full" />
+                </div>
+                <div class="mt-2 flex justify-end">
+                  <button type="button" class="text-sm font-semibold text-emerald-600" (click)="togglePagesFilter()">Toepassen</button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Publicatie jaar filter -->
+          <div class="relative">
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm"
+              (click)="toggleYearFilter()"
+            >
+              publicatie jaar
+              <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+            @if (yearFilterOpen()) {
+              <div class="absolute right-0 z-20 mt-2 w-72 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
+                <p class="mb-2 text-xs font-semibold uppercase text-slate-500">Publicatie jaar</p>
+                <div class="flex items-center justify-between text-xs text-slate-500">
+                  <span>Min 1980</span>
+                  <span>Max 2026</span>
+                </div>
+                
+                <div class="mt-3 flex items-center gap-2">
+                  <input type="range" min="1980" max="2026" value="1995" class="w-full" />
+                  <input type="range" min="1980" max="2026" value="2022" class="w-full" />
+                </div>
+                <div class="mt-2 flex justify-end">
+                  <button type="button" class="text-sm font-semibold text-emerald-600" (click)="toggleYearFilter()">Toepassen</button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Main content -->
+      <section class="space-y-6">
+        <h2 class="text-xl font-bold tracking-tight text-slate-900">
+          @if (searchQuery()) {
+            Zoekresultaten voor "{{ searchQuery() }}"
+          } @else {
+            Nieuwe boeken in de Bibliotheek
+          }
+        </h2>
+
+        @if (apiLoading()) {
+          <div class="flex items-center justify-center py-20">
+            <div class="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent"></div>
+          </div>
+        } @else if (apiError()) {
+          <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-center text-red-600">
+            {{ apiError() }}
+          </div>
+        } @else if (books().length > 0) {
+          <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+            @for (book of books(); track book.isbn) {
+              <app-book-card [book]="book" />
+            }
+          </div>
+        } @else {
+          <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 py-20 text-center">
+            <svg class="mb-4 h-12 w-12 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            <h3 class="text-lg font-medium text-slate-900">Geen boeken gevonden</h3>
+            <p class="mt-1 text-slate-500">Probeer een andere zoekterm of pas je filters aan.</p>
+          </div>
+        }
+      </section>
+    </main>
