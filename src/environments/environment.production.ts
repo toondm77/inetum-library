@@ -1,3 +1,3 @@
 export const environment = {
-  apiBase: 'https://libraryinetum-server.postgres.database.azure.com/api'
+  apiBase: 'https://libraryinetum-byepfre6f4ekc3fn.westeurope-01.azurewebsites.neti'
 };
