@@ -7,7 +7,7 @@ pool:
 
 variables:
   azureServiceConnection: 'sc_026_j_r_library'
-  webAppName: 'WebAppRLibrary'
+  webAppName: 'libraryinetum'
 
 steps:
 - task: Maven@4
@@ -41,5 +41,3 @@ steps:
     appType: 'webAppLinux'
     appName: '$(webAppName)'
     package: '$(Build.ArtifactStagingDirectory)/*.jar'
-
-
