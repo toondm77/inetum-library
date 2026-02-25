@@ -106,10 +106,24 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.okta.spring</groupId>
+            <artifactId>okta-spring-boot-starter</artifactId>
+            <version>3.0.6</version>
+        </dependency>
+        <dependency>
             <groupId>com.bucket4j</groupId>
             <artifactId>bucket4j_jdk17-core</artifactId>
             <version>8.15.0</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 
@@ -129,7 +143,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${project.basedir}/src/main/resources/openapi.yml</inputSpec>
+                            <inputSpec>${project.basedir}/src/main/resources/static/openapi.yml</inputSpec>
                             <generatorName>spring</generatorName>
                             <apiPackage>com.example.rlibrarybackend.api</apiPackage>
                             <modelPackage>com.example.rlibrarybackend.dto</modelPackage>
