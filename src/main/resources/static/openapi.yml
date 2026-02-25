@@ -1,0 +1,969 @@
+openapi: 3.0.3
+info:
+  title: RLibrary Backend API
+  version: 1.0.0
+  description: REST API for managing books, authors, and loans in the RLibrary system.
+security:
+  - auth0_jwt: []
+servers:
+  - url: /api
+  - url: http://localhost:8080/api
+paths:
+  /authors:
+    get:
+      summary: Get all authors
+      operationId: authorsGet
+      tags:
+        - Author
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: lastName
+          description: Field to sort by (id, firstName, lastName)
+        - in: query
+          name: direction
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+          description: Sort direction
+        - in: query
+          name: lastName
+          schema:
+            type: string
+          description: Filter by last name (contains, case-insensitive)
+        - in: query
+          name: nationality
+          schema:
+            type: string
+          description: Filter by nationality (contains, case-insensitive)
+      responses:
+        '200':
+          description: List of authors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedAuthorResponse'
+    post:
+      summary: Create a new author
+      operationId: authorsPost
+      tags:
+        - Author
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorDto'
+      responses:
+        '201':
+          description: Author created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorDto'
+  /authors/{id}:
+    get:
+      summary: Get author by ID
+      operationId: authorsIdGet
+      tags:
+        - Author
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Author found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorDto'
+        '404':
+          description: Author not found
+    delete:
+      summary: Delete author by ID
+      operationId: authorsIdDelete
+      tags:
+        - Author
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Author deleted
+        '404':
+          description: Author not found
+  /books:
+    get:
+      summary: Get all books
+      operationId: booksGet
+      tags:
+        - Book
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: title
+          description: Field to sort by (id, title, publicationYear)
+        - in: query
+          name: direction
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+          description: Sort direction
+        - in: query
+          name: title
+          schema:
+            type: string
+          description: Filter by title (contains, case-insensitive)
+        - in: query
+          name: minAmountOfPages
+          schema:
+            type: integer
+          description: Filter by minimum amount of pages
+        - in: query
+          name: maxAmountOfPages
+          schema:
+            type: integer
+          description: Filter by maximum amount of pages
+        - in: query
+          name: themeType
+          schema:
+            type: ThemeType
+          description: Filter by the theme
+        - in: query
+          name: libraryId
+          schema:
+            type: integer
+            format: int64
+          description: Filter by library id
+      responses:
+        '200':
+          description: List of books
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedBookResponse'
+    post:
+      summary: Create a new book
+      operationId: booksPost
+      tags:
+        - Book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookDto'
+      responses:
+        '201':
+          description: Book created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookDto'
+        '404':
+          description: Library not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /books/{id}:
+    get:
+      summary: Get book by ID
+      operationId: booksIdGet
+      tags:
+        - Book
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Book found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookDto'
+        '404':
+          description: Book not found
+    delete:
+      summary: Delete book by ID
+      operationId: booksIdDelete
+      tags:
+        - Book
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Book deleted
+        '404':
+          description: Book not found
+  /libraries:
+    get:
+      summary: Get all libraries
+      operationId: librariesGet
+      tags:
+        - Library
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: name
+          description: Field to sort by (id, name, city)
+        - in: query
+          name: direction
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+          description: Sort direction
+        - in: query
+          name: name
+          schema:
+            type: string
+          description: Filter by name (contains, case-insensitive)
+        - in: query
+          name: city
+          schema:
+            type: string
+          description: Filter by city (contains, case-insensitive)
+      responses:
+        '200':
+          description: List of libraries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedLibraryResponse'
+    post:
+      summary: Create a new library
+      operationId: librariesPost
+      tags:
+        - Library
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LibraryDto'
+      responses:
+        '201':
+          description: Library created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryDto'
+        '409':
+          description: A library with this name already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /libraries/{id}:
+    get:
+      summary: Get library by ID
+      operationId: librariesIdGet
+      tags:
+        - Library
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Library found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryDto'
+        '404':
+          description: Library not found
+    delete:
+      summary: Delete library by ID
+      operationId: librariesIdDelete
+      tags:
+        - Library
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Library deleted
+        '404':
+          description: Library not found
+  /libraries/{id}/books:
+    get:
+      summary: Get books for a library
+      operationId: librariesIdBooksGet
+      tags:
+        - Library
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+      responses:
+        '200':
+          description: List of books in the library
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedBookResponse'
+        '404':
+          description: Library not found
+  /loans:
+    get:
+      summary: Get all loans
+      operationId: loansGet
+      tags:
+        - Loan
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: loanDate
+          description: Field to sort by (id, loanDate, returnDate, status)
+        - in: query
+          name: direction
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+          description: Sort direction
+        - in: query
+          name: status
+          schema:
+            type: string
+          description: Filter by loan status
+        - in: query
+          name: personId
+          schema:
+            type: integer
+            format: int64
+          description: Filter by person id
+        - in: query
+          name: loanDateFrom
+          schema:
+            type: string
+            format: date
+          description: Filter loans from this date (inclusive)
+        - in: query
+          name: loanDateTo
+          schema:
+            type: string
+            format: date
+          description: Filter loans until this date (inclusive)
+      responses:
+        '200':
+          description: List of loans
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedLoanResponse'
+    post:
+      summary: Create a new loan
+      operationId: loansPost
+      tags:
+        - Loan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanDto'
+      responses:
+        '201':
+          description: Loan created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoanDto'
+  /loans/{id}:
+    get:
+      summary: Get loan by ID
+      operationId: loansIdGet
+      tags:
+        - Loan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Loan found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoanDto'
+        '404':
+          description: Loan not found
+    delete:
+      summary: Delete loan by ID
+      operationId: loansIdDelete
+      tags:
+        - Loan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Loan deleted
+        '404':
+          description: Loan not found
+  /persons:
+    get:
+      summary: Get all persons
+      operationId: personsGet
+      tags:
+        - Person
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: lastName
+          description: Field to sort by (id, firstName, lastName, birthDate)
+        - in: query
+          name: direction
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+          description: Sort direction
+        - in: query
+          name: lastName
+          schema:
+            type: string
+          description: Filter by last name (contains, case-insensitive)
+        - in: query
+          name: accountStatus
+          schema:
+            type: string
+          description: Filter by account status
+      responses:
+        '200':
+          description: List of persons
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedPersonResponse'
+    post:
+      summary: Create a new person
+      operationId: personsPost
+      tags:
+        - Person
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonDto'
+      responses:
+        '201':
+          description: Person created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonDto'
+        '400':
+          description: Invalid birthdate (must be before today)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Library not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /persons/{id}:
+    get:
+      summary: Get person by ID
+      operationId: personsIdGet
+      tags:
+        - Person
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Person found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonDto'
+        '404':
+          description: Person not found
+    delete:
+      summary: Delete person by ID
+      operationId: personsIdDelete
+      tags:
+        - Person
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Person deleted
+        '404':
+          description: Person not found
+components:
+  securitySchemes:
+    auth0_jwt:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://dev-m362yc372ygvz1ny.us.auth0.com/authorize?audience=https://rlibrary.com
+          tokenUrl: https://dev-m362yc372ygvz1ny.us.auth0.com/oauth/token
+          scopes:
+            openid: OpenId Connect
+            profile: User Profile
+            email: User Email
+  schemas:
+    AuthorDto:
+      type: object
+      required:
+        - firstName
+        - lastName
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 100
+    BookDto:
+      type: object
+      required:
+        - title
+        - isbn
+        - authorId
+        - libraryId
+        - publishedYear
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        isbn:
+          type: string
+          minLength: 10
+          maxLength: 17
+        authorId:
+          type: integer
+          format: int64
+        libraryId:
+          type: integer
+          format: int64
+        libraryName:
+          type: string
+          readOnly: true
+        publishedYear:
+          type: integer
+          minimum: 1400
+          maximum: 2100
+    LoanDto:
+      type: object
+      required:
+        - loanDate
+        - personId
+        - bookIds
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        loanDate:
+          type: string
+          format: date
+        returnDate:
+          type: string
+          format: date
+        status:
+          type: string
+        personId:
+          type: integer
+          format: int64
+        loanRuleId:
+          type: integer
+          format: int64
+        bookIds:
+          type: array
+          minItems: 1
+          items:
+            type: integer
+            format: int64
+    PersonDto:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - birthDate
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        birthDate:
+          type: string
+          format: date
+        functie:
+          type: string
+        badgeCode:
+          type: string
+        activeLibraryId:
+          type: integer
+          format: int64
+        accountStatus:
+          type: string
+        personalStatsId:
+          type: integer
+          format: int64
+        loanIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+        bookComplaintIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+    ErrorResponse:
+      type: object
+      required:
+        - status
+        - message
+      properties:
+        status:
+          type: integer
+        message:
+          type: string
+    LibraryDto:
+      type: object
+      required:
+        - name
+        - country
+        - city
+        - street
+        - streetNumber
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        country:
+          type: string
+          minLength: 1
+          maxLength: 100
+        city:
+          type: string
+          minLength: 1
+          maxLength: 100
+        street:
+          type: string
+          minLength: 1
+          maxLength: 100
+        streetNumber:
+          type: string
+          minLength: 1
+          maxLength: 20
+        description:
+          type: string
+          maxLength: 1000
+        address:
+          type: string
+        phoneNumber:
+          type: string
+        email:
+          type: string
+        website:
+          type: string
+        openingHours:
+          type: string
+        libraryStatsId:
+          type: integer
+          format: int64
+        libraryRuleId:
+          type: integer
+          format: int64
+        bookIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+    ThemeType:
+      type: string
+      enum:
+        - FINANCE
+        - LAWS
+        - COMMUNICATION
+        - BUSINESS
+        - COMPUTERSCIENCE
+        - IT
+    PagedAuthorResponse:
+      type: object
+      required:
+        - page
+        - size
+        - totalElements
+        - totalPages
+        - items
+      properties:
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          minimum: 0
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthorDto'
+    PagedBookResponse:
+      type: object
+      required:
+        - page
+        - size
+        - totalElements
+        - totalPages
+        - items
+      properties:
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          minimum: 0
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookDto'
+    PagedLibraryResponse:
+      type: object
+      required:
+        - page
+        - size
+        - totalElements
+        - totalPages
+        - items
+      properties:
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          minimum: 0
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LibraryDto'
+    PagedLoanResponse:
+      type: object
+      required:
+        - page
+        - size
+        - totalElements
+        - totalPages
+        - items
+      properties:
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          minimum: 0
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LoanDto'
+    PagedPersonResponse:
+      type: object
+      required:
+        - page
+        - size
+        - totalElements
+        - totalPages
+        - items
+      properties:
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          minimum: 0
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonDto'
