@@ -1,7 +1,9 @@
-import { ChangeDetectionStrategy, Component, signal, inject } from '@angular/core';
-import { NgTemplateOutlet } from '@angular/common';
+import { ChangeDetectionStrategy, Component, signal, inject, computed } from '@angular/core';
+import { NgTemplateOutlet, AsyncPipe } from '@angular/common';
 import { AuthService } from '@auth0/auth0-angular';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { RoleService } from '../services/role.service';
 
 type IconName =
   | 'home'
@@ -20,30 +22,38 @@ type NavItem = {
   icon: IconName;
   route: string;
   badge?: number;
+  adminOnly?: boolean;
 };
 
 
 @Component({
   selector: 'app-side-nav',
   standalone: true,
-  imports: [NgTemplateOutlet, RouterLink, RouterLinkActive],
+  imports: [NgTemplateOutlet, AsyncPipe, RouterLink, RouterLinkActive],
   templateUrl: './side-nav.component.html',
   styleUrl: './side-nav.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SideNavComponent {
   private readonly auth = inject(AuthService);
+  private readonly roleService = inject(RoleService);
 
-  protected readonly navItems: NavItem[] = [
+  private readonly isAdmin = toSignal(this.roleService.isAdmin$, { initialValue: false });
+
+  private readonly allNavItems: NavItem[] = [
     { label: 'Home', icon: 'home', route: '/home' },
     { label: 'Favorieten', icon: 'favorites', route: '/favorites' },
     { label: 'Mijn uitleningen', icon: 'loans', route: '/loans', badge: 4 },
-    { label: 'Alle uitleningen', icon: 'all-loans', route: '/admin/loans', badge: 47 },
-    { label: 'Boeken beheren', icon: 'books', route: '/admin/books' },
+    { label: 'Alle uitleningen', icon: 'all-loans', route: '/admin/loans', badge: 47, adminOnly: true },
+    { label: 'Boeken beheren', icon: 'books', route: '/admin/books', adminOnly: true },
     { label: 'Mijn statistieken', icon: 'stats', route: '/stats' },
-    { label: 'Bibliotheek statistieken', icon: 'library-stats', route: '/admin/stats' },
+    { label: 'Bibliotheek statistieken', icon: 'library-stats', route: '/admin/stats', adminOnly: true },
     { label: 'Instellingen', icon: 'settings', route: '/settings' },
   ];
+
+  protected readonly navItems = computed(() =>
+    this.allNavItems.filter(item => !item.adminOnly || this.isAdmin())
+  );
 
   protected readonly user = {
     initials: 'TD',
