@@ -1,17 +1,15 @@
 package com.example.rlibrarybackend;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 
-import java.io.IOException;
-
-@SpringBootApplication
+@SpringBootApplication(excludeName = {
+        "com.okta.spring.boot.oauth.OktaOAuth2ResourceServerAutoConfig",
+        "com.okta.spring.boot.oauth.OktaOAuth2AutoConfig"
+})
 public class RLibraryBackendApplication {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         SpringApplication.run(RLibraryBackendApplication.class, args);
     }
 }

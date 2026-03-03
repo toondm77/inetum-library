@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,6 +26,7 @@ public class PersonController implements PersonsApi {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('WERKNEMER', 'VERANTWOORDELIJKE')")
     public ResponseEntity<PagedPersonResponse> personsGet(Integer page, Integer size, String sort, String direction, String lastName, String accountStatus) {
         int p = page != null ? page : 0;
         int s = size != null ? size : 20;
@@ -44,6 +46,7 @@ public class PersonController implements PersonsApi {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('WERKNEMER', 'VERANTWOORDELIJKE')")
     public ResponseEntity<PersonDto> personsIdGet(Long id) {
         log.info("GET /persons/{} requested", id);
         return personService.findPersonById(id)
@@ -58,6 +61,7 @@ public class PersonController implements PersonsApi {
     }
 
     @Override
+    @PreAuthorize("hasRole('VERANTWOORDELIJKE')")
     public ResponseEntity<PersonDto> personsPost(PersonDto personDto) {
         log.info("POST /persons requested");
         PersonDto created = personService.createPerson(personDto);
@@ -66,6 +70,7 @@ public class PersonController implements PersonsApi {
     }
 
     @Override
+    @PreAuthorize("hasRole('VERANTWOORDELIJKE')")
     public ResponseEntity<Void> personsIdDelete(Long id) {
         log.info("DELETE /persons/{} requested", id);
         boolean deleted = personService.deletePerson(id);

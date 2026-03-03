@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,6 +29,7 @@ public class BookController implements BooksApi {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('WERKNEMER', 'VERANTWOORDELIJKE')")
     public ResponseEntity<PagedBookResponse> booksGet(Integer page, Integer size, String sort, String direction, String title, Integer minAmountOfPages, Integer maxAmountOfPages, ThemeType themeType, Long libraryId) {
         int p = page != null ? page : 0;//default staat ook in apispec
         int s = size != null ? size : 10;
@@ -55,6 +57,7 @@ public class BookController implements BooksApi {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('WERKNEMER', 'VERANTWOORDELIJKE')")
     public ResponseEntity<BookDto> booksIdGet(Long id) {
         log.info("GET /books/{} requested", id);
         return bookService.findBookById(id)
@@ -69,6 +72,7 @@ public class BookController implements BooksApi {
     }
 
     @Override
+    @PreAuthorize("hasRole('VERANTWOORDELIJKE')")
     public ResponseEntity<BookDto> booksPost(@Valid @RequestBody BookDto bookDto) {
         log.info("POST /books requested");
         BookDto created = bookService.createBook(bookDto);
@@ -77,6 +81,7 @@ public class BookController implements BooksApi {
     }
 
     @Override
+    @PreAuthorize("hasRole('VERANTWOORDELIJKE')")
     public ResponseEntity<Void> booksIdDelete(Long id) {
         log.info("DELETE /books/{} requested", id);
         boolean deleted = bookService.deleteBook(id);
