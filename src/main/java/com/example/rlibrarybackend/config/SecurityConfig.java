@@ -49,12 +49,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Allow the Angular frontend (default port 4200) and other common local ports
         configuration.setAllowedOrigins(List.of(
             "http://localhost:4200",
-            "http://localhost:3000",
             "https://agreeable-pebble-069fb9303.1.azurestaticapps.net"
         ));
+        //niet vergeten authorization in frontend en backend
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
