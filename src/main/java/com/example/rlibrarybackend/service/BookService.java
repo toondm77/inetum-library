@@ -146,8 +146,22 @@ public class BookService {
             dto.setId(book.getId().longValue());
         }
         dto.setTitle(book.getTitle());
+        dto.setDescription(book.getDescription());
+        dto.setAmountOfPages(book.getAmountOfPages());
         dto.setIsbn(book.getIsbn());
         dto.setPublishedYear(book.getPublicationYear());
+        dto.setReleaseDate(book.getReleaseDate());
+        if (book.getTheme() != null) {
+            dto.setTheme(com.example.rlibrarybackend.dto.ThemeType.valueOf(book.getTheme().name()));
+        }
+        if (book.getBookState() != null) {
+            dto.setBookState(com.example.rlibrarybackend.dto.BookState.valueOf(book.getBookState().name()));
+        }
+        dto.setAgeCategory(book.getAgeCategory());
+        dto.setPurchasePrice(book.getPurchasePrice());
+        dto.setDuplicates(book.getDupplicates());
+        dto.setAuthorName(book.getAuthor());
+
         if (book.getAuthors() != null && !book.getAuthors().isEmpty()) {
             Author firstAuthor = book.getAuthors().getFirst();
             if (firstAuthor.getId() != null) {
@@ -167,14 +181,24 @@ public class BookService {
             book.setId(dto.getId().intValue());
         }
         book.setTitle(dto.getTitle());
+        book.setDescription(dto.getDescription());
         book.setIsbn(dto.getIsbn());
         book.setPublicationYear(dto.getPublishedYear());
+        book.setAmountOfPages(dto.getAmountOfPages() != null ? dto.getAmountOfPages() : 1);
+        book.setReleaseDate(dto.getReleaseDate());
+        if (dto.getTheme() != null) {
+            book.setTheme(ThemeType.valueOf(dto.getTheme().name()));
+        }
+        if (dto.getBookState() != null) {
+            book.setBookState(com.example.rlibrarybackend.model.BookState.valueOf(dto.getBookState().name()));
+        }
+        book.setAgeCategory(dto.getAgeCategory());
+        book.setPurchasePrice(dto.getPurchasePrice() != null ? dto.getPurchasePrice() : 0.0);
+        book.setDupplicates(dto.getDuplicates() != null ? dto.getDuplicates() : 0);
+
         book.setLibrary(library);
         book.setAuthor(author.getFirstName() + " " + author.getLastName());
         book.setAuthors(List.of(author));
-        // provide safe defaults for required numeric fields not exposed in DTO
-        book.setAmountOfPages(1);
-        book.setDupplicates(0);
         return book;
     }
 }
