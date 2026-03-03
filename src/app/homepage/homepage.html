@@ -19,13 +19,13 @@
 
           @if (showSuggestions() && suggestions().length > 0) {
             <div class="absolute inset-x-0 top-full z-50 mt-2 override-w overflow-hidden rounded-xl border border-slate-100 bg-white py-2 shadow-lg ring-1 ring-slate-900/5">
-              @for (suggestion of suggestions(); track suggestion) {
+              @for (suggestion of suggestions(); track suggestion.id) {
                 <button
                   type="button"
                   class="block w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
                   (mousedown)="$event.preventDefault(); selectSuggestion(suggestion)"
                 >
-                  {{ suggestion }}
+                  {{ suggestion.title }}
                 </button>
               }
             </div>
@@ -38,23 +38,45 @@
           <div class="relative">
             <button
               type="button"
-              class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm"
+              class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition"
+              [class.border-emerald-200]="selectedTheme()"
+              [class.bg-emerald-50]="selectedTheme()"
+              [class.text-emerald-700]="selectedTheme()"
               (click)="toggleThemeFilter()"
             >
-              3 thema's
+              @if (selectedTheme()) {
+                @for (opt of themeOptions; track opt.value) {
+                  @if (opt.value === selectedTheme()) {
+                    {{ opt.label }}
+                  }
+                }
+              } @else {
+                Thema
+              }
               <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
               </svg>
             </button>
             @if (themeFilterOpen()) {
               <div class="absolute right-0 z-20 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
-                <p class="mb-2 text-xs font-semibold uppercase text-slate-500">Kies thema's</p>
+                <p class="mb-2 text-xs font-semibold uppercase text-slate-500">Kies thema</p>
                 <div class="space-y-1 text-sm text-slate-700">
-                  <button type="button" class="flex w-full items-center gap-2 rounded-md px-2 py-1 hover:bg-slate-50" (click)="toggleThemeFilter()">Programmeren</button>
-                  <button type="button" class="flex w-full items-center gap-2 rounded-md px-2 py-1 hover:bg-slate-50" (click)="toggleThemeFilter()">Psychologie</button>
-                  <button type="button" class="flex w-full items-center gap-2 rounded-md px-2 py-1 hover:bg-slate-50" (click)="toggleThemeFilter()">Informatica</button>
-                  <button type="button" class="flex w-full items-center gap-2 rounded-md px-2 py-1 hover:bg-slate-50" (click)="toggleThemeFilter()">Literatuur</button>
-                  <button type="button" class="flex w-full items-center gap-2 rounded-md px-2 py-1 hover:bg-slate-50" (click)="toggleThemeFilter()">Business</button>
+                  @for (opt of themeOptions; track opt.value) {
+                    <button 
+                      type="button" 
+                      class="flex w-full items-center justify-between rounded-md px-2 py-1.5 hover:bg-slate-50 transition"
+                      [class.bg-emerald-50]="selectedTheme() === opt.value"
+                      [class.text-emerald-700]="selectedTheme() === opt.value"
+                      (click)="selectTheme(opt.value)"
+                    >
+                      <span>{{ opt.label }}</span>
+                      @if (selectedTheme() === opt.value) {
+                        <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                        </svg>
+                      }
+                    </button>
+                  }
                 </div>
               </div>
             }
@@ -146,6 +168,56 @@
             @for (book of books(); track book.isbn) {
               <app-book-card [book]="book" />
             }
+          </div>
+
+          <div class="mt-8 flex items-center justify-between border-t border-slate-200 pt-8">
+            <div class="hidden sm:block text-sm text-slate-500">
+              Totaal <span class="font-medium text-slate-900">{{ totalElements() }}</span> resultaten
+            </div>
+            
+            <div class="flex items-center gap-4">
+              <div class="flex items-center gap-2">
+                <span class="text-sm text-slate-500 hidden sm:inline">Toon</span>
+                <select 
+                  class="rounded-md border-slate-200 text-sm font-medium text-slate-700 focus:border-emerald-500 focus:ring-emerald-500 py-1.5 pl-3 pr-8"
+                  (change)="changePageSize($event)"
+                >
+                  @for (size of pageSizeOptions; track size) {
+                    <option [value]="size" [selected]="size === pageSize()">{{ size }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button 
+                  type="button" 
+                  class="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50 disabled:hover:bg-white transition"
+                  [disabled]="currentPage() === 0"
+                  (click)="prevPage()"
+                >
+                  <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                  </svg>
+                  <span class="hidden sm:inline">Vorige</span>
+                </button>
+                
+                <span class="text-sm font-medium text-slate-900 mx-2 min-w-[3rem] text-center">
+                  {{ currentPage() + 1 }} / {{ totalPages() }}
+                </span>
+
+                <button 
+                  type="button" 
+                  class="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50 disabled:hover:bg-white transition"
+                  [disabled]="currentPage() >= totalPages() - 1"
+                  (click)="nextPage()"
+                >
+                  <span class="hidden sm:inline">Volgende</span>
+                  <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
         } @else {
           <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 py-20 text-center">
