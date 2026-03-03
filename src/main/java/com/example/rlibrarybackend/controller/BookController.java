@@ -29,8 +29,8 @@ public class BookController implements BooksApi {
 
     @Override
     public ResponseEntity<PagedBookResponse> booksGet(Integer page, Integer size, String sort, String direction, String title, Integer minAmountOfPages, Integer maxAmountOfPages, ThemeType themeType, Long libraryId) {
-        int p = page != null ? page : 0;
-        int s = size != null ? size : 20;
+        int p = page != null ? page : 0;//default staat ook in apispec
+        int s = size != null ? size : 10;
         String sortField = (sort != null && !sort.isBlank()) ? sort : "title";
         String dir = (direction != null && !direction.isBlank()) ? direction : "asc";
         log.info("GET /books requested page={} size={} sort={} direction={} minPages={} maxPages={}", p, s, sortField, dir, minAmountOfPages, maxAmountOfPages);

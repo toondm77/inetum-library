@@ -109,7 +109,6 @@ public class LoanController implements LoansApi {
         }
         loan.setLoanDate(dto.getLoanDate());
         loan.setReturnDate(dto.getReturnDate());
-        // Status, person, books linking should be handled in a dedicated method/service if needed
         return loan;
     }
 }
