@@ -674,6 +674,12 @@ components:
           type: string
           minLength: 1
           maxLength: 200
+        description:
+          type: string
+          maxLength: 1000
+        authorName:
+          type: string
+          readOnly: true
         isbn:
           type: string
           minLength: 10
@@ -691,6 +697,33 @@ components:
           type: integer
           minimum: 1400
           maximum: 2100
+        amountOfPages:
+          type: integer
+          minimum: 1
+          maximum: 10000
+        releaseDate:
+          type: string
+          format: date
+        theme:
+          $ref: '#/components/schemas/ThemeType'
+        bookState:
+          $ref: '#/components/schemas/BookState'
+        ageCategory:
+          type: string
+          maxLength: 50
+        purchasePrice:
+          type: number
+          format: double
+          minimum: 0.0
+        duplicates:
+          type: integer
+          minimum: 0
+    BookState:
+      type: string
+      enum:
+        - AVAILABLE
+        - TEMPORARILYUNAVAILABLE
+        - PERMANENTLYUNAVAILABLE
     LoanDto:
       type: object
       required:
