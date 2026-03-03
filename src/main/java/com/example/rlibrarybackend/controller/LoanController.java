@@ -8,6 +8,7 @@ import com.example.rlibrarybackend.service.LoanService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
@@ -26,6 +27,7 @@ public class LoanController implements LoansApi {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('WERKNEMER', 'VERANTWOORDELIJKE')")
     public ResponseEntity<PagedLoanResponse> loansGet(Integer page, Integer size, String sort, String direction, String status, Long personId, LocalDate loanDateFrom, LocalDate loanDateTo) {
         int p = page != null ? page : 0;
         int s = size != null ? size : 20;
@@ -48,6 +50,7 @@ public class LoanController implements LoansApi {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('WERKNEMER', 'VERANTWOORDELIJKE')")
     public ResponseEntity<LoanDto> loansIdGet(Long id) {
         log.info("GET /loans/{} requested", id);
         return loanService.findLoanById(id)
@@ -62,6 +65,7 @@ public class LoanController implements LoansApi {
     }
 
     @Override
+    @PreAuthorize("hasRole('VERANTWOORDELIJKE')")
     public ResponseEntity<LoanDto> loansPost(LoanDto loanDto) {
         log.info("POST /loans requested");
         Loan created = loanService.createLoan(mapDtoToEntity(loanDto));
@@ -70,6 +74,7 @@ public class LoanController implements LoansApi {
     }
 
     @Override
+    @PreAuthorize("hasRole('VERANTWOORDELIJKE')")
     public ResponseEntity<Void> loansIdDelete(Long id) {
         log.info("DELETE /loans/{} requested", id);
         boolean deleted = loanService.deleteLoan(id.intValue());

@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,6 +32,7 @@ public class LibraryController implements LibrariesApi {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('WERKNEMER', 'VERANTWOORDELIJKE')")
     public ResponseEntity<PagedLibraryResponse> librariesGet(Integer page, Integer size, String sort, String direction, String name, String city) {
         int p = page != null ? page : 0;
         int s = size != null ? size : 20;
@@ -50,6 +52,7 @@ public class LibraryController implements LibrariesApi {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('WERKNEMER', 'VERANTWOORDELIJKE')")
     public ResponseEntity<LibraryDto> librariesIdGet(Long id) {
         log.info("GET /libraries/{} requested", id);
         return libraryService.findLibraryById(id)
@@ -64,6 +67,7 @@ public class LibraryController implements LibrariesApi {
     }
 
     @Override
+    @PreAuthorize("hasRole('VERANTWOORDELIJKE')")
     public ResponseEntity<LibraryDto> librariesPost(LibraryDto libraryDto) {
         log.info("POST /libraries requested name={}", libraryDto.getName());
         LibraryDto created = libraryService.createLibrary(libraryDto);
@@ -72,6 +76,7 @@ public class LibraryController implements LibrariesApi {
     }
 
     @Override
+    @PreAuthorize("hasRole('VERANTWOORDELIJKE')")
     public ResponseEntity<Void> librariesIdDelete(Long id) {
         log.info("DELETE /libraries/{} requested", id);
         boolean deleted = libraryService.deleteLibrary(id);
@@ -84,6 +89,7 @@ public class LibraryController implements LibrariesApi {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('WERKNEMER', 'VERANTWOORDELIJKE')")
     public ResponseEntity<PagedBookResponse> librariesIdBooksGet(Long id, Integer page, Integer size) {
         int p = page != null ? page : 0;
         int s = size != null ? size : 20;
