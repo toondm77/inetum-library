@@ -94,7 +94,7 @@ public class PersonService {
         dto.setFirstName(person.getFirstName());
         dto.setLastName(person.getLastName());
         dto.setBirthDate(person.getBirthDate());
-        dto.setFunctie(person.getFunctie());
+        dto.setFunctie(person.getFunction());
         dto.setBadgeCode(person.getBadgeCode());
         dto.setAuth0Id(person.getAuth0Id());
         dto.setUserRole(person.getUserRole() != null ? UserRole.valueOf(person.getUserRole().name()) : null);
@@ -136,7 +136,7 @@ public class PersonService {
         person.setFirstName(dto.getFirstName());
         person.setLastName(dto.getLastName());
         person.setBirthDate(dto.getBirthDate());
-        person.setFunctie(dto.getFunctie());
+        person.setFunction(dto.getFunctie());
         person.setBadgeCode(dto.getBadgeCode());
         if (dto.getAuth0Id() != null) {
             person.setAuth0Id(dto.getAuth0Id());

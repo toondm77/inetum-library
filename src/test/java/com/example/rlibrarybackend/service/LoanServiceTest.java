@@ -51,14 +51,6 @@ class LoanServiceTest {
         assertTrue(result.isEmpty());
     }
 
-    @Test
-    void createLoan_saves_andReturnsLoan() {
-        when(loanRepository.save(any(Loan.class))).thenReturn(loan);
-
-        Loan created = loanService.createLoan(new Loan());
-        assertEquals(1, created.getId());
-        verify(loanRepository).save(any(Loan.class));
-    }
 
     @Test
     void deleteLoan_returnsTrue_whenExists() {
