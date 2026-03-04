@@ -39,15 +39,6 @@ public class LibraryService {
                 .map(this::mapEntityToDto);
     }
 
-    public List<LibraryDto> getAllLibraries() {
-        log.debug("Fetching all libraries");
-        List<LibraryDto> libraries = libraryRepository.findAll().stream()
-                .map(this::mapEntityToDto)
-                .toList();
-        log.debug("Fetched {} libraries", libraries.size());
-        return libraries;
-    }
-
     public Optional<LibraryDto> findLibraryById(Long id) {
         log.debug("Finding library id={}", id);
         return libraryRepository.findById(id.intValue()).map(this::mapEntityToDto);
