@@ -16,9 +16,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LoanService {
     private final LoanRepository loanRepository;
+    private final CurrentUserService currentUserService;
 
-    public LoanService(LoanRepository loanRepository) {
+    public LoanService(LoanRepository loanRepository, CurrentUserService currentUserService) {
         this.loanRepository = loanRepository;
+        this.currentUserService = currentUserService;
     }
 
     public Page<Loan> getAllLoans(int page, int size, String sort, String direction, String status, Long personId, LocalDate loanDateFrom, LocalDate loanDateTo) {
@@ -37,15 +39,9 @@ public class LoanService {
             spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("loanDate"), loanDateTo));
         }
         Sort sortOrder = Sort.by(Sort.Direction.fromString(direction != null ? direction : "asc"), sort != null && !sort.isBlank() ? sort : "loanDate");
+
         Page<Loan> loans = loanRepository.findAll(spec, PageRequest.of(page, size, sortOrder));
         log.debug("Fetched {} loans", loans.getContent().size());
-        return loans;
-    }
-
-    public List<Loan> getAllLoans() {
-        log.debug("Fetching all loans");
-        List<Loan> loans = loanRepository.findAll();
-        log.debug("Fetched {} loans", loans.size());
         return loans;
     }
 

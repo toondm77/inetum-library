@@ -4,12 +4,11 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.stereotype.Component;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * Converts Auth0 JWT claims into Spring Security GrantedAuthority objects.
@@ -26,29 +25,31 @@ import java.util.stream.Stream;
  * This converter reads the claim "https://rlibrary.com/roles" and maps each
  * role to a ROLE_<NAME> Spring Security authority (uppercased).
  *
+ * It also preserves standard scope-based authorities (SCOPE_...) from the
+ * default JwtGrantedAuthoritiesConverter so no JWT claims are lost.
+ *
  * Example: role "Verantwoordelijke" → ROLE_VERANTWOORDELIJKE
  *          role "Werknemer"         → ROLE_WERKNEMER
  */
-@Component
 public class Auth0RolesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
 
     private static final String ROLES_CLAIM = "https://rlibrary.com/roles";
 
+    private final JwtGrantedAuthoritiesConverter defaultConverter = new JwtGrantedAuthoritiesConverter();
+
     @Override
     public Collection<GrantedAuthority> convert(Jwt jwt) {
+        var authorities = new ArrayList<GrantedAuthority>(defaultConverter.convert(jwt));
+
         List<?> roles = jwt.getClaimAsStringList(ROLES_CLAIM);
 
-        if (roles == null || roles.isEmpty()) {
-            return Collections.emptyList();
+        if (roles != null) {
+            roles.stream()
+                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role.toString().toUpperCase()))
+                    .forEach(authorities::add);
         }
 
-        return roles.stream()
-                .filter(role -> role instanceof String)
-                .map(role -> (String) role)
-                .flatMap(role -> Stream.of(
-                        new SimpleGrantedAuthority("ROLE_" + role.toUpperCase())
-                ))
-                .collect(java.util.stream.Collectors.toList());
+        return authorities;
     }
 }
 

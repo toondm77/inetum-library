@@ -1,23 +1,9 @@
 package com.example.rlibrarybackend.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -52,6 +38,28 @@ public class Person {
     @Size(max = 100)
     private String badgeCode;
 
+    @Column(unique = true)
+    private String auth0Id;
+
+    @Enumerated(EnumType.STRING)
+    @Column(updatable = false)
+    private UserRole userRole;
+
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
+    @Size(max = 100)
+    private String country;
+
+    @Size(max = 20)
+    private String phoneNumber;
+
+    @Size(max = 10)
+    private String preferredLanguage;
+
+    @Size(max = 500)
+    private String profilePictureUrl;
+
     @ManyToOne
     @JoinColumn(name = "active_library_id")
     private Library activeLibrary;
@@ -65,6 +73,9 @@ public class Person {
     @OneToMany(mappedBy = "person")
     @JsonManagedReference
     private List<Loan> loans = new ArrayList<>();
+
+    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notification> notifications = new ArrayList<>();
 
     @OneToMany(mappedBy = "person")
     private List<BookComplaint> bookComplaints = new ArrayList<>();

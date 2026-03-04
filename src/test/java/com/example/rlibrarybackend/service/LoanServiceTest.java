@@ -34,16 +34,6 @@ class LoanServiceTest {
     }
 
     @Test
-    void getAllLoans_returnsList() {
-        when(loanRepository.findAll()).thenReturn(Collections.singletonList(loan));
-
-        var result = loanService.getAllLoans();
-        assertEquals(1, result.size());
-        assertEquals(1, result.getFirst().getId());
-        verify(loanRepository).findAll();
-    }
-
-    @Test
     void findLoanById_returnsLoan_whenPresent() {
         when(loanRepository.findById(1)).thenReturn(Optional.of(loan));
 

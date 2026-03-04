@@ -4,6 +4,7 @@ import com.example.rlibrarybackend.api.LoansApi;
 import com.example.rlibrarybackend.dto.LoanDto;
 import com.example.rlibrarybackend.dto.PagedLoanResponse;
 import com.example.rlibrarybackend.model.Loan;
+import com.example.rlibrarybackend.service.CurrentUserService;
 import com.example.rlibrarybackend.service.LoanService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -11,19 +12,22 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api")
 @Slf4j
 public class LoanController implements LoansApi {
-    private final LoanService loanService;
 
-    public LoanController(LoanService loanService) {
+    private final LoanService loanService;
+    private final CurrentUserService currentUserService;
+
+    public LoanController(LoanService loanService, CurrentUserService currentUserService) {
         this.loanService = loanService;
+        this.currentUserService = currentUserService;
     }
 
     @Override
@@ -33,6 +37,17 @@ public class LoanController implements LoansApi {
         int s = size != null ? size : 20;
         String sortField = (sort != null && !sort.isBlank()) ? sort : "loanDate";
         String dir = (direction != null && !direction.isBlank()) ? direction : "asc";
+
+        if (!currentUserService.currentUserIsStaff()) {
+            var currentPerson = currentUserService.getCurrentPerson();
+            Long ownPersonId = currentPerson.getId().longValue();
+            if (personId != null && !personId.equals(ownPersonId)) {
+                log.warn("Access denied: personId={} tried to list loans for personId={}", ownPersonId, personId);
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only access your own loans");
+            }
+            personId = ownPersonId;
+        }
+
         log.info("GET /loans requested page={} size={} sort={} direction={}", p, s, sortField, dir);
         Page<Loan> loansPage = loanService.getAllLoans(p, s, sortField, dir, status, personId, loanDateFrom, loanDateTo);
         List<LoanDto> items = loansPage.getContent().stream()
@@ -55,6 +70,14 @@ public class LoanController implements LoansApi {
         log.info("GET /loans/{} requested", id);
         return loanService.findLoanById(id)
                 .map(loan -> {
+                    // Regular users can only fetch their own loan
+                    if (!currentUserService.currentUserIsStaff()) {
+                        var currentPerson = currentUserService.getCurrentPerson();
+                        if (loan.getPerson() == null || !loan.getPerson().getId().equals(currentPerson.getId())) {
+                            log.warn("Access denied: personId={} tried to access loanId={}", currentPerson.getId(), id);
+                            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only access your own loans");
+                        }
+                    }
                     log.debug("GET /loans/{} found", id);
                     return ResponseEntity.ok(mapEntityToDto(loan));
                 })

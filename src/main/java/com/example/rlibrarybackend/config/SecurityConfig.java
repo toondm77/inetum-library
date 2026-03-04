@@ -30,19 +30,12 @@ public class SecurityConfig {
     @Value("${okta.oauth2.client-id}")
     private String clientId;
 
-    private final Auth0RolesConverter auth0RolesConverter;
-
-    public SecurityConfig(Auth0RolesConverter auth0RolesConverter) {
-        this.auth0RolesConverter = auth0RolesConverter;
-    }
-
     @Bean
     public SecurityFilterChain web(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(withDefaults())
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/openapi.yml").permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
@@ -57,7 +50,7 @@ public class SecurityConfig {
     @Bean
     public JwtAuthenticationConverter auth0JwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(auth0RolesConverter);
+        converter.setJwtGrantedAuthoritiesConverter(new Auth0RolesConverter());
         return converter;
     }
 
@@ -69,7 +62,6 @@ public class SecurityConfig {
             "http://localhost:4200",
             "https://agreeable-pebble-069fb9303.1.azurestaticapps.net"
         ));
-        //niet vergeten authorization in frontend en backend
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

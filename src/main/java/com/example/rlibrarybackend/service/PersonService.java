@@ -1,6 +1,8 @@
 package com.example.rlibrarybackend.service;
 
+import com.example.rlibrarybackend.dto.Gender;
 import com.example.rlibrarybackend.dto.PersonDto;
+import com.example.rlibrarybackend.dto.UserRole;
 import com.example.rlibrarybackend.model.AccountStatus;
 import com.example.rlibrarybackend.model.Library;
 import com.example.rlibrarybackend.model.Person;
@@ -43,15 +45,6 @@ public class PersonService {
         Sort sortOrder = Sort.by(Sort.Direction.fromString(direction != null ? direction : "asc"), sort != null && !sort.isBlank() ? sort : "lastName");
         return personRepository.findAll(spec, PageRequest.of(page, size, sortOrder))
                 .map(this::mapEntityToDto);
-    }
-
-    public List<PersonDto> getAllPersons() {
-        log.debug("Fetching all persons");
-        List<PersonDto> persons = personRepository.findAll().stream()
-                .map(this::mapEntityToDto)
-                .toList();
-        log.debug("Fetched {} persons", persons.size());
-        return persons;
     }
 
     public Optional<PersonDto> findPersonById(Long id) {
@@ -103,6 +96,13 @@ public class PersonService {
         dto.setBirthDate(person.getBirthDate());
         dto.setFunctie(person.getFunctie());
         dto.setBadgeCode(person.getBadgeCode());
+        dto.setAuth0Id(person.getAuth0Id());
+        dto.setUserRole(person.getUserRole() != null ? UserRole.valueOf(person.getUserRole().name()) : null);
+        dto.setGender(person.getGender() != null ? Gender.valueOf(person.getGender().name()) : null);
+        dto.setCountry(person.getCountry());
+        dto.setPhoneNumber(person.getPhoneNumber());
+        dto.setPreferredLanguage(person.getPreferredLanguage());
+        dto.setProfilePictureUrl(person.getProfilePictureUrl());
         if (person.getActiveLibrary() != null && person.getActiveLibrary().getId() != null) {
             dto.setActiveLibraryId(person.getActiveLibrary().getId().longValue());
         }
@@ -114,6 +114,12 @@ public class PersonService {
             dto.setLoanIds(person.getLoans().stream()
                     .filter(loan -> loan.getId() != null)
                     .map(loan -> loan.getId().longValue())
+                    .toList());
+        }
+        if (person.getNotifications() != null) {
+            dto.setNotificationIds(person.getNotifications().stream()
+                    .filter(n -> n.getId() != null)
+                    .map(n -> n.getId().longValue())
                     .toList());
         }
         if (person.getBookComplaints() != null) {
@@ -135,6 +141,23 @@ public class PersonService {
         person.setBirthDate(dto.getBirthDate());
         person.setFunctie(dto.getFunctie());
         person.setBadgeCode(dto.getBadgeCode());
+        if (dto.getAuth0Id() != null) {
+            person.setAuth0Id(dto.getAuth0Id());
+        }
+        if (dto.getUserRole() != null) {
+            try {
+                person.setUserRole(com.example.rlibrarybackend.model.UserRole.valueOf(dto.getUserRole().name()));
+            } catch (IllegalArgumentException ignored) {}
+        }
+        if (dto.getGender() != null) {
+            try {
+                person.setGender(com.example.rlibrarybackend.model.Gender.valueOf(dto.getGender().name()));
+            } catch (IllegalArgumentException ignored) {}
+        }
+        person.setCountry(dto.getCountry());
+        person.setPhoneNumber(dto.getPhoneNumber());
+        person.setPreferredLanguage(dto.getPreferredLanguage());
+        person.setProfilePictureUrl(dto.getProfilePictureUrl());
         if (dto.getAccountStatus() != null) {
             try {
                 person.setAccountStatus(AccountStatus.valueOf(dto.getAccountStatus().toUpperCase()));
@@ -145,6 +168,7 @@ public class PersonService {
             person.setAccountStatus(AccountStatus.ACTIVE);
         }
         person.setLoans(new ArrayList<>());
+        person.setNotifications(new ArrayList<>());
         person.setBookComplaints(new ArrayList<>());
         return person;
     }
