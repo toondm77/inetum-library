@@ -101,9 +101,6 @@ public class LibraryService {
 
     private Library mapDtoToEntity(LibraryDto dto) {
         Library library = new Library();
-        if (dto.getId() != null) {
-            library.setId(dto.getId().intValue());
-        }
         library.setName(dto.getName());
         library.setCountry(dto.getCountry());
         library.setCity(dto.getCity());

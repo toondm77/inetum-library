@@ -133,9 +133,6 @@ public class PersonService {
 
     private Person mapDtoToEntity(PersonDto dto) {
         Person person = new Person();
-        if (dto.getId() != null) {
-            person.setId(dto.getId().intValue());
-        }
         person.setFirstName(dto.getFirstName());
         person.setLastName(dto.getLastName());
         person.setBirthDate(dto.getBirthDate());

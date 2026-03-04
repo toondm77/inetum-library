@@ -74,7 +74,7 @@ public class Book {
     private double purchasePrice;
 
     @Min(0)
-    private int dupplicates;
+    private int duplicates;
 
     @ManyToMany
     private List<Author> authors = new ArrayList<>();

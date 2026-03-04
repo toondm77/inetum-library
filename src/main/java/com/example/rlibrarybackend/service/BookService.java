@@ -159,7 +159,7 @@ public class BookService {
         }
         dto.setAgeCategory(book.getAgeCategory());
         dto.setPurchasePrice(book.getPurchasePrice());
-        dto.setDuplicates(book.getDupplicates());
+        dto.setDuplicates(book.getDuplicates());
         dto.setAuthorName(book.getAuthor());
 
         if (book.getAuthors() != null && !book.getAuthors().isEmpty()) {
@@ -177,9 +177,6 @@ public class BookService {
 
     private Book mapDtoToEntity(BookDto dto, Library library, Author author) {
         Book book = new Book();
-        if (dto.getId() != null) {
-            book.setId(dto.getId().intValue());
-        }
         book.setTitle(dto.getTitle());
         book.setDescription(dto.getDescription());
         book.setIsbn(dto.getIsbn());
@@ -194,7 +191,7 @@ public class BookService {
         }
         book.setAgeCategory(dto.getAgeCategory());
         book.setPurchasePrice(dto.getPurchasePrice() != null ? dto.getPurchasePrice() : 0.0);
-        book.setDupplicates(dto.getDuplicates() != null ? dto.getDuplicates() : 0);
+        book.setDuplicates(dto.getDuplicates() != null ? dto.getDuplicates() : 0);
 
         book.setLibrary(library);
         book.setAuthor(author.getFirstName() + " " + author.getLastName());

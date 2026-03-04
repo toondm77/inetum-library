@@ -3,7 +3,6 @@ package com.example.rlibrarybackend.controller;
 import com.example.rlibrarybackend.api.LoansApi;
 import com.example.rlibrarybackend.dto.LoanDto;
 import com.example.rlibrarybackend.dto.PagedLoanResponse;
-import com.example.rlibrarybackend.model.Loan;
 import com.example.rlibrarybackend.service.CurrentUserService;
 import com.example.rlibrarybackend.service.LoanService;
 import org.springframework.data.domain.Page;
@@ -49,10 +48,8 @@ public class LoanController implements LoansApi {
         }
 
         log.info("GET /loans requested page={} size={} sort={} direction={}", p, s, sortField, dir);
-        Page<Loan> loansPage = loanService.getAllLoans(p, s, sortField, dir, status, personId, loanDateFrom, loanDateTo);
-        List<LoanDto> items = loansPage.getContent().stream()
-                .map(this::mapEntityToDto)
-                .toList();
+        Page<LoanDto> loansPage = loanService.getAllLoans(p, s, sortField, dir, status, personId, loanDateFrom, loanDateTo);
+        List<LoanDto> items = loansPage.getContent();
         PagedLoanResponse response = new PagedLoanResponse(
                 loansPage.getNumber(),
                 loansPage.getSize(),
@@ -69,17 +66,16 @@ public class LoanController implements LoansApi {
     public ResponseEntity<LoanDto> loansIdGet(Long id) {
         log.info("GET /loans/{} requested", id);
         return loanService.findLoanById(id)
-                .map(loan -> {
-                    // Regular users can only fetch their own loan
+                .map(dto -> {
                     if (!currentUserService.currentUserIsStaff()) {
                         var currentPerson = currentUserService.getCurrentPerson();
-                        if (loan.getPerson() == null || !loan.getPerson().getId().equals(currentPerson.getId())) {
+                        if (!Long.valueOf(currentPerson.getId()).equals(dto.getPersonId())) {
                             log.warn("Access denied: personId={} tried to access loanId={}", currentPerson.getId(), id);
                             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only access your own loans");
                         }
                     }
                     log.debug("GET /loans/{} found", id);
-                    return ResponseEntity.ok(mapEntityToDto(loan));
+                    return ResponseEntity.ok(dto);
                 })
                 .orElseGet(() -> {
                     log.warn("GET /loans/{} not found", id);
@@ -91,9 +87,9 @@ public class LoanController implements LoansApi {
     @PreAuthorize("hasRole('VERANTWOORDELIJKE')")
     public ResponseEntity<LoanDto> loansPost(LoanDto loanDto) {
         log.info("POST /loans requested");
-        Loan created = loanService.createLoan(mapDtoToEntity(loanDto));
+        LoanDto created = loanService.createLoan(loanDto);
         log.info("POST /loans created id={}", created.getId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapEntityToDto(created));
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @Override
@@ -107,36 +103,5 @@ public class LoanController implements LoansApi {
         }
         log.info("DELETE /loans/{} deleted", id);
         return ResponseEntity.noContent().build();
-    }
-
-    private LoanDto mapEntityToDto(Loan loan) {
-        LoanDto dto = new LoanDto();
-        dto.setId(loan.getId() != null ? loan.getId().longValue() : null);
-        dto.setLoanDate(loan.getLoanDate());
-        dto.setReturnDate(loan.getReturnDate());
-        dto.setStatus(loan.getStatus() != null ? loan.getStatus().name() : null);
-        if (loan.getPerson() != null && loan.getPerson().getId() != null) {
-            dto.setPersonId(loan.getPerson().getId().longValue());
-        }
-        if (loan.getLoanRule() != null && loan.getLoanRule().getId() != null) {
-            dto.setLoanRuleId(loan.getLoanRule().getId().longValue());
-        }
-        if (loan.getBooks() != null) {
-            dto.setBookIds(loan.getBooks().stream()
-                    .filter(book -> book.getId() != null)
-                    .map(book -> book.getId().longValue())
-                    .toList());
-        }
-        return dto;
-    }
-
-    private Loan mapDtoToEntity(LoanDto dto) {
-        Loan loan = new Loan();
-        if (dto.getId() != null) {
-            loan.setId(dto.getId().intValue());
-        }
-        loan.setLoanDate(dto.getLoanDate());
-        loan.setReturnDate(dto.getReturnDate());
-        return loan;
     }
 }

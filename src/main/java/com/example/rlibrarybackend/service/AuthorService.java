@@ -80,9 +80,6 @@ public class AuthorService {
 
     private Author mapDtoToEntity(AuthorDto dto) {
         Author entity = new Author();
-        if (dto.getId() != null) {
-            entity.setId(dto.getId().intValue());
-        }
         entity.setFirstName(dto.getFirstName());
         entity.setLastName(dto.getLastName());
         return entity;
