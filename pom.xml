@@ -8,7 +8,7 @@
         <version>3.3.8</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.example</groupId>
+    <groupId>com.inetum</groupId>
     <artifactId>RLibraryBackend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>RLibraryBackend</name>
@@ -130,8 +130,8 @@
                         <configuration>
                             <inputSpec>${project.basedir}/src/main/resources/static/openapi.yml</inputSpec>
                             <generatorName>spring</generatorName>
-                            <apiPackage>com.example.rlibrarybackend.api</apiPackage>
-                            <modelPackage>com.example.rlibrarybackend.dto</modelPackage>
+                            <apiPackage>com.inetum.rlibrarybackend.api</apiPackage>
+                            <modelPackage>com.inetum.rlibrarybackend.dto</modelPackage>
                             <supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>
                             <configOptions>
                                 <interfaceOnly>true</interfaceOnly>
