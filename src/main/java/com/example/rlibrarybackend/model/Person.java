@@ -33,7 +33,7 @@ public class Person {
     private LocalDate birthDate;
 
     @Size(max = 100)
-    private String functie;
+    private String function;
 
     @Size(max = 100)
     private String badgeCode;

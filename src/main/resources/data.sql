@@ -70,17 +70,17 @@ INSERT INTO book (title, author, description, isbn, publication_year, amount_of_
 ('The Great Gatsby', 'F.Scott Fitzgerald', 'Jazz Age classic about love and wealth', '978-0743273565', 1925, 180, '1925-04-10', 'FINANCE', 'AVAILABLE', 'ADULT', 11.99, 8, 1);
 
 -- Insert Persons (with all new fields: auth0Id, userRole, gender, country, phoneNumber, preferredLanguage, profilePictureUrl)
-INSERT INTO person (first_name, last_name, birth_date, functie, badge_code, account_status, auth0Id, user_role, gender, country, phone_number, preferred_language, profile_picture_url) VALUES
+INSERT INTO person (first_name, last_name, birth_date, function, badge_code, account_status, auth0Id, user_role, gender, country, phone_number, preferred_language, profile_picture_url) VALUES
 ('Alice',   'Smith',     '1990-05-15', 'Bibliotheekmedewerker', 'B12345', 'ACTIVE',   'auth0|001aaaaabbbbcccc', 'WERKNEMER',         'FEMALE',           'Belgium',     '+32 479 12 34 56', 'nl', 'https://i.pravatar.cc/150?img=1');
-INSERT INTO person (first_name, last_name, birth_date, functie, badge_code, account_status, auth0Id, user_role, gender, country, phone_number, preferred_language, profile_picture_url) VALUES
+INSERT INTO person (first_name, last_name, birth_date, function, badge_code, account_status, auth0Id, user_role, gender, country, phone_number, preferred_language, profile_picture_url) VALUES
 ('Bob',     'Johnson',   '1985-09-20', 'Bibliotheekverantwoordelijke', 'B67890', 'ACTIVE', 'auth0|002aaaaabbbbcccc', 'VERANTWOORDELIJKE', 'MALE',             'Belgium',     '+32 471 98 76 54', 'nl', 'https://i.pravatar.cc/150?img=2');
-INSERT INTO person (first_name, last_name, birth_date, functie, badge_code, account_status, auth0Id, user_role, gender, country, phone_number, preferred_language, profile_picture_url) VALUES
+INSERT INTO person (first_name, last_name, birth_date, function, badge_code, account_status, auth0Id, user_role, gender, country, phone_number, preferred_language, profile_picture_url) VALUES
 ('Claire',  'Dupont',    '1995-03-08', 'Bibliotheekmedewerker', 'B11111', 'ACTIVE',   'auth0|003aaaaabbbbcccc', 'WERKNEMER',         'FEMALE',           'Belgium',     '+32 468 11 22 33', 'fr', 'https://i.pravatar.cc/150?img=3');
-INSERT INTO person (first_name, last_name, birth_date, functie, badge_code, account_status, auth0Id, user_role, gender, country, phone_number, preferred_language, profile_picture_url) VALUES
+INSERT INTO person (first_name, last_name, birth_date, function, badge_code, account_status, auth0Id, user_role, gender, country, phone_number, preferred_language, profile_picture_url) VALUES
 ('David',   'Martens',   '1978-11-30', 'Bibliotheekverantwoordelijke', 'B22222', 'ACTIVE', 'auth0|004aaaaabbbbcccc', 'VERANTWOORDELIJKE', 'MALE',             'Netherlands', '+31 6 12 34 56 78', 'nl', 'https://i.pravatar.cc/150?img=4');
-INSERT INTO person (first_name, last_name, birth_date, functie, badge_code, account_status, auth0Id, user_role, gender, country, phone_number, preferred_language, profile_picture_url) VALUES
+INSERT INTO person (first_name, last_name, birth_date, function, badge_code, account_status, auth0Id, user_role, gender, country, phone_number, preferred_language, profile_picture_url) VALUES
 ('Emma',    'Claes',     '2000-07-22', 'Bibliotheekmedewerker', 'B33333', 'ACTIVE',   'auth0|005aaaaabbbbcccc', 'WERKNEMER',         'FEMALE',           'Belgium',     '+32 496 55 44 33', 'nl', 'https://i.pravatar.cc/150?img=5');
-INSERT INTO person (first_name, last_name, birth_date, functie, badge_code, account_status, auth0Id, user_role, gender, country, phone_number, preferred_language, profile_picture_url) VALUES
+INSERT INTO person (first_name, last_name, birth_date, function, badge_code, account_status, auth0Id, user_role, gender, country, phone_number, preferred_language, profile_picture_url) VALUES
 ('Frank',   'Peeters',   '1982-04-14', 'Bibliotheekmedewerker', 'B44444', 'INACTIVE', 'auth0|699d9fb9f7aba8d01764eb05', 'WERKNEMER',         'MALE',             'Belgium',     '+32 474 66 77 88', 'nl', 'https://i.pravatar.cc/150?img=6');
 
 -- Insert Notifications (person 1 = Alice, person 2 = Bob)
