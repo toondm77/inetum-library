@@ -10,6 +10,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -69,11 +73,34 @@ public class AuthorService {
         return true;
     }
 
+    public Optional<AuthorDto> updateAuthor(Long id, AuthorDto authorDto) {
+        Author existing = authorRepository.findById(id.intValue()).orElse(null);
+        if (existing == null) {
+            log.warn("Update author failed: id={} not found", id);
+            return Optional.empty();
+        }
+
+        if (authorDto.getBirthDate() != null && !authorDto.getBirthDate().isBefore(LocalDate.now())) {
+            log.warn("Update author id={} failed: birthDate must be in the past", id);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Birth date must be in the past");
+        }
+
+        Author updated = mapDtoToEntity(authorDto);
+        updated.setId(existing.getId());
+
+        Author saved = authorRepository.save(updated);
+        log.info("Updated author id={}", id);
+        return Optional.of(mapEntityToDto(saved));
+    }
+
     private AuthorDto mapEntityToDto(Author author) {
         AuthorDto dto = new AuthorDto();
         dto.setId(author.getId() != null ? author.getId().longValue() : null);
         dto.setFirstName(author.getFirstName());
         dto.setLastName(author.getLastName());
+        dto.setNationality(author.getNationality());
+        dto.setDescription(author.getDescription());
+        dto.setBirthDate(author.getBirthDate());
         return dto;
     }
 
@@ -81,6 +108,15 @@ public class AuthorService {
         Author entity = new Author();
         entity.setFirstName(dto.getFirstName());
         entity.setLastName(dto.getLastName());
+        if (dto.getNationality() != null) {
+            entity.setNationality(dto.getNationality());
+        }
+        if (dto.getDescription() != null) {
+            entity.setDescription(dto.getDescription());
+        }
+        if (dto.getBirthDate() != null) {
+            entity.setBirthDate(dto.getBirthDate());
+        }
         return entity;
     }
 }

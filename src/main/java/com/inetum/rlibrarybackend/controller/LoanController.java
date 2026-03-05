@@ -104,4 +104,19 @@ public class LoanController implements LoansApi {
         log.info("DELETE /loans/{} deleted", id);
         return ResponseEntity.noContent().build();
     }
+
+    @Override
+    @PreAuthorize("hasRole('VERANTWOORDELIJKE')")
+    public ResponseEntity<LoanDto> loansIdPut(Long id, LoanDto loanDto) {
+        log.info("PUT /loans/{} requested", id);
+        return loanService.updateLoan(id, loanDto)
+                .map(dto -> {
+                    log.info("PUT /loans/{} updated", id);
+                    return ResponseEntity.ok(dto);
+                })
+                .orElseGet(() -> {
+                    log.warn("PUT /loans/{} not found", id);
+                    return ResponseEntity.notFound().build();
+                });
+    }
 }

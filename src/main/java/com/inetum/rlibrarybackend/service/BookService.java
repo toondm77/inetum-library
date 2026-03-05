@@ -17,6 +17,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -88,6 +89,37 @@ public class BookService {
                     log.warn("Delete book failed: id={} not found", id);
                     return false;
                 });
+    }
+
+    public Optional<BookDto> updateBook(Long id, BookDto bookDto) {
+        Book existing = bookRepository.findById(id.intValue()).orElse(null);
+        if (existing == null) {
+            log.warn("Update book failed: id={} not found", id);
+            return Optional.empty();
+        }
+
+        if (bookDto.getPublishedYear() == null || bookDto.getPublishedYear() > java.time.LocalDate.now().getYear()) {
+            log.warn("Update book id={} failed: publishedYear {} is in the future", id, bookDto.getPublishedYear());
+            throw new ResponseStatusException(BAD_REQUEST, "Publication year must not be in the future");
+        }
+        if (bookDto.getAuthorId() == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "Author id is required");
+        }
+        Author author = authorRepository.findById(bookDto.getAuthorId().intValue())
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Author not found"));
+
+        if (bookDto.getLibraryId() == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "Library id is required");
+        }
+        Library library = libraryRepository.findById(bookDto.getLibraryId().intValue())
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Library not found"));
+
+        Book updated = mapDtoToEntity(bookDto, library, author);
+        updated.setId(existing.getId());
+
+        Book saved = bookRepository.save(updated);
+        log.info("Updated book id={}", id);
+        return Optional.of(mapEntityToDto(saved));
     }
 
     public BookDto createBook(BookDto bookDto) {
@@ -195,7 +227,7 @@ public class BookService {
 
         book.setLibrary(library);
         book.setAuthor(author.getFirstName() + " " + author.getLastName());
-        book.setAuthors(List.of(author));
+        book.setAuthors(new ArrayList<>(List.of(author)));
         return book;
     }
 }

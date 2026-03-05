@@ -2,7 +2,11 @@ package com.inetum.rlibrarybackend.service;
 
 import com.inetum.rlibrarybackend.dto.LibraryDto;
 import com.inetum.rlibrarybackend.model.Library;
+import com.inetum.rlibrarybackend.model.LibraryRule;
+import com.inetum.rlibrarybackend.model.LibraryStats;
 import com.inetum.rlibrarybackend.repository.LibraryRepository;
+import com.inetum.rlibrarybackend.repository.LibraryRuleRepository;
+import com.inetum.rlibrarybackend.repository.LibraryStatsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -19,9 +23,15 @@ import java.util.Optional;
 @Slf4j
 public class LibraryService {
     private final LibraryRepository libraryRepository;
+    private final LibraryRuleRepository libraryRuleRepository;
+    private final LibraryStatsRepository libraryStatsRepository;
 
-    public LibraryService(LibraryRepository libraryRepository) {
+    public LibraryService(LibraryRepository libraryRepository,
+                          LibraryRuleRepository libraryRuleRepository,
+                          LibraryStatsRepository libraryStatsRepository) {
         this.libraryRepository = libraryRepository;
+        this.libraryRuleRepository = libraryRuleRepository;
+        this.libraryStatsRepository = libraryStatsRepository;
     }
 
     public Page<LibraryDto> getAllLibraries(int page, int size, String sort, String direction, String name, String city) {
@@ -72,6 +82,40 @@ public class LibraryService {
         libraryRepository.deleteById(entityId);
         log.info("Deleted library id={}", id);
         return true;
+    }
+
+    public Optional<LibraryDto> updateLibrary(Long id, LibraryDto dto) {
+        Library existing = libraryRepository.findById(id.intValue()).orElse(null);
+        if (existing == null) {
+            log.warn("Update library failed: id={} not found", id);
+            return Optional.empty();
+        }
+
+        if (dto.getLibraryRuleId() != null && dto.getLibraryRuleId() !=0) {
+            LibraryRule rule = libraryRuleRepository.findById(dto.getLibraryRuleId().intValue())
+                    .orElseThrow(() -> {
+                        log.warn("Update library id={} failed: libraryRule id={} not found", id, dto.getLibraryRuleId());
+                        return new ResponseStatusException(HttpStatus.NOT_FOUND, "LibraryRule not found");
+                    });
+        }
+        if (dto.getLibraryStatsId() != null && dto.getLibraryStatsId()!=0) {
+            LibraryStats stats = libraryStatsRepository.findById(dto.getLibraryStatsId().intValue())
+                    .orElseThrow(() -> {
+                        log.warn("Update library id={} failed: libraryStats id={} not found", id, dto.getLibraryStatsId());
+                        return new ResponseStatusException(HttpStatus.NOT_FOUND, "LibraryStats not found");
+                    });
+        }
+
+        existing.setName(dto.getName());
+        existing.setCountry(dto.getCountry());
+        existing.setCity(dto.getCity());
+        existing.setStreet(dto.getStreet());
+        existing.setStreetNumber(dto.getStreetNumber());
+        existing.setDescription(dto.getDescription());
+
+        Library saved = libraryRepository.save(existing);
+        log.info("Updated library id={}", id);
+        return Optional.of(mapEntityToDto(saved));
     }
 
     private LibraryDto mapEntityToDto(Library library) {

@@ -85,6 +85,66 @@ public class PersonService {
         return true;
     }
 
+    public Optional<PersonDto> updatePerson(Long id, PersonDto dto) {
+        Person existing = personRepository.findById(id.intValue()).orElse(null);
+        if (existing == null) {
+            log.warn("Update person failed: id={} not found", id);
+            return Optional.empty();
+        }
+
+        // nooit auth0 aanpassen
+        if (dto.getAuth0Id() != null && !dto.getAuth0Id().equals(existing.getAuth0Id())) {
+            log.warn("Update person id={} failed: attempt to change auth0Id rejected", id);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "auth0Id cannot be changed");
+        }
+
+        if (dto.getBirthDate() != null && !dto.getBirthDate().isBefore(LocalDate.now())) {
+            log.warn("Update person id={} failed: birthDate must be before today", id);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Birth date must be before today");
+        }
+
+        Library activeLibrary = existing.getActiveLibrary();
+        if (dto.getActiveLibraryId() != null) {
+            activeLibrary = libraryRepository.findById(dto.getActiveLibraryId().intValue())
+                    .orElseThrow(() -> {
+                        log.warn("Update person id={} failed: library id={} not found", id, dto.getActiveLibraryId());
+                        return new ResponseStatusException(HttpStatus.NOT_FOUND, "Library not found");
+                    });
+        }
+
+        existing.setFirstName(dto.getFirstName());
+        existing.setLastName(dto.getLastName());
+        if (dto.getBirthDate() != null) {
+            existing.setBirthDate(dto.getBirthDate());
+        }
+        existing.setFunction(dto.getFunctie());
+        existing.setBadgeCode(dto.getBadgeCode());
+        if (dto.getUserRole() != null) {
+            try {
+                existing.setUserRole(com.inetum.rlibrarybackend.model.UserRole.valueOf(dto.getUserRole().name()));
+            } catch (IllegalArgumentException ignored) {}
+        }
+        if (dto.getGender() != null) {
+            try {
+                existing.setGender(com.inetum.rlibrarybackend.model.Gender.valueOf(dto.getGender().name()));
+            } catch (IllegalArgumentException ignored) {}
+        }
+        existing.setCountry(dto.getCountry());
+        existing.setPhoneNumber(dto.getPhoneNumber());
+        existing.setPreferredLanguage(dto.getPreferredLanguage());
+        existing.setProfilePictureUrl(dto.getProfilePictureUrl());
+        existing.setActiveLibrary(activeLibrary);
+        if (dto.getAccountStatus() != null) {
+            try {
+                existing.setAccountStatus(AccountStatus.valueOf(dto.getAccountStatus().toUpperCase()));
+            } catch (IllegalArgumentException ignored) {}
+        }
+
+        Person saved = personRepository.save(existing);
+        log.info("Updated person id={}", id);
+        return Optional.of(mapEntityToDto(saved));
+    }
+
     private PersonDto mapEntityToDto(Person person) {
         PersonDto dto = new PersonDto();
         dto.setId(person.getId() != null ? person.getId().longValue() : null);
