@@ -79,4 +79,19 @@ public class AuthorController implements AuthorsApi {
         log.info("DELETE /authors/{} deleted", id);
         return ResponseEntity.noContent().build();
     }
+
+    @Override
+    @PreAuthorize("hasRole('VERANTWOORDELIJKE')")
+    public ResponseEntity<AuthorDto> authorsIdPut(Long id, AuthorDto authorDto) {
+        log.info("PUT /authors/{} requested", id);
+        return authorService.updateAuthor(id, authorDto)
+                .map(dto -> {
+                    log.info("PUT /authors/{} updated", id);
+                    return ResponseEntity.ok(dto);
+                })
+                .orElseGet(() -> {
+                    log.warn("PUT /authors/{} not found", id);
+                    return ResponseEntity.notFound().build();
+                });
+    }
 }

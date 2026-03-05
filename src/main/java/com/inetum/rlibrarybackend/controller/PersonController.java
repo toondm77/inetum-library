@@ -95,4 +95,27 @@ public class PersonController implements PersonsApi {
         log.info("DELETE /persons/{} deleted", id);
         return ResponseEntity.noContent().build();
     }
+
+    @Override
+    @PreAuthorize("hasAnyRole('WERKNEMER', 'VERANTWOORDELIJKE')")
+    public ResponseEntity<PersonDto> personsIdPut(Long id, PersonDto personDto) {
+        log.info("PUT /persons/{} requested", id);
+
+        if (!currentUserService.currentUserIsStaff()) {
+            var currentPerson = currentUserService.getCurrentPerson();
+            if (!Long.valueOf(currentPerson.getId()).equals(id)) {
+                log.warn("Access denied: personId={} tried to update personId={}", currentPerson.getId(), id);
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only update your own data");
+            }
+        }
+        return personService.updatePerson(id, personDto)
+                .map(dto -> {
+                    log.info("PUT /persons/{} updated", id);
+                    return ResponseEntity.ok(dto);
+                })
+                .orElseGet(() -> {
+                    log.warn("PUT /persons/{} not found", id);
+                    return ResponseEntity.notFound().build();
+                });
+    }
 }

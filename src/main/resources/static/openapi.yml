@@ -98,6 +98,39 @@ paths:
                 $ref: '#/components/schemas/AuthorDto'
         '404':
           description: Author not found
+    put:
+      summary: Update author by ID
+      operationId: authorsIdPut
+      tags:
+        - Author
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorDto'
+      responses:
+        '200':
+          description: Author updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorDto'
+        '400':
+          description: Invalid birthdate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Author not found
     delete:
       summary: Delete author by ID
       operationId: authorsIdDelete
@@ -226,6 +259,43 @@ paths:
                 $ref: '#/components/schemas/BookDto'
         '404':
           description: Book not found
+    put:
+      summary: Update book by ID
+      operationId: booksIdPut
+      tags:
+        - Book
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookDto'
+      responses:
+        '200':
+          description: Book updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookDto'
+        '400':
+          description: Invalid publication year
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Book, Author or Library not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       summary: Delete book by ID
       operationId: booksIdDelete
@@ -338,6 +408,37 @@ paths:
                 $ref: '#/components/schemas/LibraryDto'
         '404':
           description: Library not found
+    put:
+      summary: Update library by ID
+      operationId: librariesIdPut
+      tags:
+        - Library
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LibraryDto'
+      responses:
+        '200':
+          description: Library updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryDto'
+        '404':
+          description: Library, LibraryRule or LibraryStats not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       summary: Delete library by ID
       operationId: librariesIdDelete
@@ -491,6 +592,37 @@ paths:
                 $ref: '#/components/schemas/LoanDto'
         '404':
           description: Loan not found
+    put:
+      summary: Update loan by ID
+      operationId: loansIdPut
+      tags:
+        - Loan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanDto'
+      responses:
+        '200':
+          description: Loan updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoanDto'
+        '404':
+          description: Loan, Person, LoanRule or Book not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       summary: Delete loan by ID
       operationId: loansIdDelete
@@ -609,6 +741,43 @@ paths:
                 $ref: '#/components/schemas/PersonDto'
         '404':
           description: Person not found
+    put:
+      summary: Update person by ID
+      operationId: personsIdPut
+      tags:
+        - Person
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonDto'
+      responses:
+        '200':
+          description: Person updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonDto'
+        '400':
+          description: Invalid birthdate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Person or Library not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       summary: Delete person by ID
       operationId: personsIdDelete
@@ -657,6 +826,16 @@ components:
           type: string
           minLength: 1
           maxLength: 100
+        nationality:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 1000
+        birthDate:
+          type: string
+          format: date
+          description: Must be in the past
     BookDto:
       type: object
       required:

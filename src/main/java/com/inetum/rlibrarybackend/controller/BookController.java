@@ -90,4 +90,19 @@ public class BookController implements BooksApi {
         log.warn("DELETE /books/{} not found", id);
         return ResponseEntity.notFound().build();
     }
+
+    @Override
+    @PreAuthorize("hasRole('VERANTWOORDELIJKE')")
+    public ResponseEntity<BookDto> booksIdPut(Long id, @Valid @RequestBody BookDto bookDto) {
+        log.info("PUT /books/{} requested", id);
+        return bookService.updateBook(id, bookDto)
+                .map(dto -> {
+                    log.info("PUT /books/{} updated", id);
+                    return ResponseEntity.ok(dto);
+                })
+                .orElseGet(() -> {
+                    log.warn("PUT /books/{} not found", id);
+                    return ResponseEntity.notFound().build();
+                });
+    }
 }

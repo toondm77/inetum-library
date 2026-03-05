@@ -86,6 +86,21 @@ public class LibraryController implements LibrariesApi {
     }
 
     @Override
+    @PreAuthorize("hasRole('VERANTWOORDELIJKE')")
+    public ResponseEntity<LibraryDto> librariesIdPut(Long id, LibraryDto libraryDto) {
+        log.info("PUT /libraries/{} requested", id);
+        return libraryService.updateLibrary(id, libraryDto)
+                .map(dto -> {
+                    log.info("PUT /libraries/{} updated", id);
+                    return ResponseEntity.ok(dto);
+                })
+                .orElseGet(() -> {
+                    log.warn("PUT /libraries/{} not found", id);
+                    return ResponseEntity.notFound().build();
+                });
+    }
+
+    @Override
     @PreAuthorize("hasAnyRole('WERKNEMER', 'VERANTWOORDELIJKE')")
     public ResponseEntity<PagedBookResponse> librariesIdBooksGet(Long id, Integer page, Integer size) {
         int p = page != null ? page : 0;
