@@ -7,7 +7,6 @@ import { Book } from '../models/book.model';
   standalone: true,
   imports: [RouterLink],
   templateUrl: './book-card.component.html',
-  styleUrl: './book-card.component.css'
 })
 export class BookCardComponent {
   @Input({ required: true }) book!: Book;

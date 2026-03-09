@@ -10,7 +10,6 @@ import { BookCardComponent } from '../book-card/book-card.component';
   standalone: true,
   imports: [BookCardComponent],
   templateUrl: './homepage.html',
-  styleUrl: './homepage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Homepage {
@@ -65,7 +64,7 @@ export class Homepage {
       this.selectedTheme.set(null);
     } else {
       this.selectedTheme.set(themeValue);
-      this.themeFilterOpen.set(false); // Close dropdown on selection for better UX? Or keep open? User friendly means easy selection. Closing confirms selection.
+      this.themeFilterOpen.set(false);
     }
     this.currentPage.set(0);
     this.searchBooks();
@@ -157,8 +156,6 @@ export class Homepage {
     const title = this.searchQuery();
     const theme = this.selectedTheme();
 
-    // If both are empty, maybe load 'new books' or just return?
-    // Let's allow searching without title if theme is selected.
     if (!title && !theme) return;
 
     this.apiLoading.set(true);

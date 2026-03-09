@@ -11,7 +11,6 @@ import { Book } from '../models/book.model';
   standalone: true,
   imports: [RouterLink],
   templateUrl: './book-detail.component.html',
-  styleUrl: './book-detail.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BookDetailComponent {
