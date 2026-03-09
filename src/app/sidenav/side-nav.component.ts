@@ -29,7 +29,7 @@ type NavItem = {
 @Component({
   selector: 'app-side-nav',
   standalone: true,
-  imports: [NgTemplateOutlet, AsyncPipe, RouterLink, RouterLinkActive],
+  imports: [NgTemplateOutlet, RouterLink, RouterLinkActive],
   templateUrl: './side-nav.component.html',
   styleUrl: './side-nav.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
