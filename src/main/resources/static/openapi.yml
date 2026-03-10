@@ -925,6 +925,10 @@ components:
         personId:
           type: integer
           format: int64
+        personName:
+          type: string
+          readOnly: true
+          description: Full name of the person who made the loan (firstName + lastName)
         loanRuleId:
           type: integer
           format: int64

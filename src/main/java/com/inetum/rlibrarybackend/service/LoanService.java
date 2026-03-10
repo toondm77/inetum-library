@@ -160,6 +160,7 @@ public class LoanService {
         dto.setStatus(loan.getStatus() != null ? loan.getStatus().name() : null);
         if (loan.getPerson() != null && loan.getPerson().getId() != null) {
             dto.setPersonId(loan.getPerson().getId().longValue());
+            dto.setPersonName(loan.getPerson().getFirstName() + " " + loan.getPerson().getLastName());
         }
         if (loan.getLoanRule() != null && loan.getLoanRule().getId() != null) {
             dto.setLoanRuleId(loan.getLoanRule().getId().longValue());
