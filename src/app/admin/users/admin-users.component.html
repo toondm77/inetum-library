@@ -2,13 +2,13 @@
   <div class="bg-white rounded-3xl shadow-sm p-6 md:p-8 w-full border border-gray-100">
     <div class="mb-6 flex items-start justify-between gap-4">
       <div>
-        <h1 class="text-[28px] font-bold text-slate-800 tracking-tight">Recente uitleningen</h1>
-        <p class="text-sm text-slate-500 mt-1">Overzicht van de laatste uitleningen in het systeem.</p>
+        <h1 class="text-[28px] font-bold text-slate-800 tracking-tight">Gebruikers</h1>
+        <p class="text-sm text-slate-500 mt-1">Overzicht van alle gebruikers. Klik op een rij voor detail.</p>
       </div>
       <button
         type="button"
         class="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
-        (click)="loadRecentLoans()"
+        (click)="loadUsers()"
         [disabled]="apiLoading()"
       >
         Vernieuwen
@@ -16,7 +16,7 @@
     </div>
 
     <div class="flex items-center gap-4 mb-6">
-      <span class="text-sm text-slate-500">Totaal uitleningen</span>
+      <span class="text-sm text-slate-500">Totaal gebruikers</span>
       <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-[13px] font-bold border border-gray-200">{{ totalElements() }}</span>
     </div>
 
@@ -33,39 +33,35 @@
         <table class="w-full text-left border-collapse whitespace-nowrap">
           <thead class="bg-white">
             <tr class="border-b border-gray-100 text-sm">
-              <th class="py-5 px-6 font-bold text-gray-800">ID</th>
-              <th class="py-5 px-6 font-bold text-gray-800">Uitleningsdatum</th>
-              <th class="py-5 px-6 font-bold text-gray-800">Terugbrengdatum</th>
+              <th class="py-5 px-6 font-bold text-gray-800">Naam</th>
+              <th class="py-5 px-6 font-bold text-gray-800">Geboortedatum</th>
+              <th class="py-5 px-6 font-bold text-gray-800">Functie</th>
+              <th class="py-5 px-6 font-bold text-gray-800">Rol</th>
               <th class="py-5 px-6 font-bold text-gray-800">Status</th>
-              <th class="py-5 px-6 font-bold text-gray-800">Persoon</th>
-              <th class="py-5 px-6 font-bold text-gray-800">Boeken</th>
+              <th class="py-5 px-6 font-bold text-gray-800">Taal</th>
             </tr>
           </thead>
           <tbody>
-            @for (loan of loans(); track loan.id) {
-              <tr class="border-b border-gray-100 hover:bg-slate-50/60 transition-colors">
-                <td class="py-5 px-6 text-[15px] font-medium text-gray-800">#{{ loan.id }}</td>
-                <td class="py-5 px-6 text-[15px] text-gray-700">{{ formatDate(loan.loanDate) }}</td>
-                <td class="py-5 px-6 text-[15px] text-gray-700">{{ formatDate(loan.returnDate) }}</td>
-                <td class="py-5 px-6">
-                  <span class="inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold bg-gray-100 text-gray-700">
-                    {{ statusLabel(loan.status) }}
-                  </span>
-                </td>
-                <td class="py-5 px-6 text-[15px] text-gray-800">{{ loan.personName }}</td>
-                <td class="py-5 px-6 text-[15px] text-gray-700">
-                  @if ((loan.bookIds?.length ?? 0) > 0) {
-                    {{ loan.bookIds.join(', ') }}
-                  } @else {
-                    -
-                  }
-                </td>
+            @for (user of users(); track user.id) {
+              <tr
+                class="border-b border-gray-100 hover:bg-slate-50/60 transition-colors cursor-pointer"
+                (click)="openUserDetails(user.id)"
+                tabindex="0"
+                role="button"
+                (keydown.enter)="openUserDetails(user.id)"
+              >
+                <td class="py-5 px-6 text-[15px] font-medium text-gray-800">{{ fullName(user) }}</td>
+                <td class="py-5 px-6 text-[15px] text-gray-700">{{ formatDate(user.birthDate) }}</td>
+                <td class="py-5 px-6 text-[15px] text-gray-700">{{ user.functie || '-' }}</td>
+                <td class="py-5 px-6 text-[15px] text-gray-700">{{ user.userRole || '-' }}</td>
+                <td class="py-5 px-6 text-[15px] text-gray-700">{{ user.accountStatus || '-' }}</td>
+                <td class="py-5 px-6 text-[15px] text-gray-700">{{ user.preferredLanguage || '-' }}</td>
               </tr>
             }
 
-            @if (loans().length === 0) {
+            @if (users().length === 0) {
               <tr>
-                <td colspan="7" class="py-10 px-6 text-center text-gray-500">Geen recente uitleningen gevonden.</td>
+                <td colspan="6" class="py-10 px-6 text-center text-gray-500">Geen gebruikers gevonden.</td>
               </tr>
             }
           </tbody>

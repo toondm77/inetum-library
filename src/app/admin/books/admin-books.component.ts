@@ -27,6 +27,7 @@ export class AdminBooksComponent {
   protected readonly pageSizeOptions = [10, 20, 50, 100];
   protected readonly apiLoading = signal(false);
   protected readonly apiError = signal<string | null>(null);
+  protected readonly deletingBookId = signal<number | null>(null);
 
   protected readonly visibleBooks = this.books;
 
@@ -136,7 +137,40 @@ export class AdminBooksComponent {
     });
   }
 
-  protected openBookDetails(bookId: number): void {
-    this.router.navigate(['/books', bookId]);
+  protected openBookDetails(bookId: number, openInEditMode = false): void {
+    this.router.navigate(['/books', bookId], {
+      queryParams: openInEditMode ? { edit: 1 } : {},
+    });
+  }
+
+  protected openAddBook(): void {
+    this.router.navigate(['/admin/books/add']);
+  }
+
+  protected deleteBook(bookId: number): void {
+    const isConfirmed = window.confirm('Ben je zeker dat je dit boek wilt verwijderen?');
+    if (!isConfirmed) {
+      return;
+    }
+
+    this.apiError.set(null);
+    this.deletingBookId.set(bookId);
+
+    this.http.delete<void>(`${this.apiBase}/books/${bookId}`).subscribe({
+      next: () => {
+        this.deletingBookId.set(null);
+
+        const remainingItemsOnPage = this.books().length - 1;
+        if (remainingItemsOnPage <= 0 && this.currentPage() > 0) {
+          this.currentPage.update((page) => page - 1);
+        }
+
+        this.loadBooks();
+      },
+      error: () => {
+        this.deletingBookId.set(null);
+        this.apiError.set('Verwijderen mislukt. Probeer opnieuw.');
+      },
+    });
   }
 }
