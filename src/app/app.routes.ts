@@ -10,6 +10,9 @@ import { AdminLoansComponent } from './admin/loans/admin-loans.component';
 import { AdminBooksComponent } from './admin/books/admin-books.component';
 import { AdminStatsComponent } from './admin/stats/admin-stats.component';
 import { BookDetailComponent } from './book-detail/book-detail.component';
+import { AdminAddBookComponent } from './admin/books/admin-add-book.component';
+import { AdminUsersComponent } from './admin/users/admin-users.component';
+import { AdminUserDetailComponent } from './admin/users/admin-user-detail.component';
 
 export const routes: Routes = [
   {
@@ -58,8 +61,23 @@ export const routes: Routes = [
     canActivate: [authGuardFn, adminGuard],
   },
   {
+    path: 'admin/books/add',
+    component: AdminAddBookComponent,
+    canActivate: [authGuardFn, adminGuard],
+  },
+  {
     path: 'admin/stats',
     component: AdminStatsComponent,
+    canActivate: [authGuardFn, adminGuard],
+  },
+  {
+    path: 'admin/users',
+    component: AdminUsersComponent,
+    canActivate: [authGuardFn, adminGuard],
+  },
+  {
+    path: 'admin/users/:id',
+    component: AdminUserDetailComponent,
     canActivate: [authGuardFn, adminGuard],
   },
 ];

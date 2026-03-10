@@ -32,11 +32,41 @@
             <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div class="space-y-2">
                 <p class="text-sm text-slate-500">{{ book()?.authorName || 'Onbekende auteur' }}</p>
-                <h1 class="text-3xl font-bold leading-tight text-slate-900">{{ book()?.title }}</h1>
+                @if (isEditMode()) {
+                  <label for="title" class="sr-only">Titel</label>
+                  <input
+                    id="title"
+                    type="text"
+                    [formControl]="editForm.controls.title"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-2xl font-bold text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+                  />
+                } @else {
+                  <h1 class="text-3xl font-bold leading-tight text-slate-900">{{ book()?.title }}</h1>
+                }
                 <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500">
-                  <span class="font-semibold text-slate-600">ISBN {{ book()?.isbn }}</span>
+                  @if (isEditMode()) {
+                    <label for="isbn" class="sr-only">ISBN</label>
+                    <input
+                      id="isbn"
+                      type="text"
+                      [formControl]="editForm.controls.isbn"
+                      class="rounded-md border border-slate-300 px-2 py-1 text-sm text-slate-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+                    />
+                  } @else {
+                    <span class="font-semibold text-slate-600">ISBN {{ book()?.isbn }}</span>
+                  }
                   <span class="text-slate-300">•</span>
-                  <span>{{ book()?.theme || 'Thema onbekend' }}</span>
+                  @if (isEditMode()) {
+                    <label for="theme" class="sr-only">Thema</label>
+                    <input
+                      id="theme"
+                      type="text"
+                      [formControl]="editForm.controls.theme"
+                      class="rounded-md border border-slate-300 px-2 py-1 text-sm text-slate-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+                    />
+                  } @else {
+                    <span>{{ book()?.theme || 'Thema onbekend' }}</span>
+                  }
                   <span class="text-slate-300">•</span>
                   <span>{{ book()?.libraryName || 'Bibliotheek onbekend' }}</span>
                 </div>
@@ -47,6 +77,15 @@
                   <span class="h-2 w-2 rounded-full bg-current"></span>
                   <span>{{ availabilityLabel(book()?.bookState) }}</span>
                 </div>
+                @if (isAdmin() && !isEditMode()) {
+                  <button
+                    type="button"
+                    class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-200 hover:text-emerald-700"
+                    (click)="enterEditMode()"
+                  >
+                    Bewerken
+                  </button>
+                }
                 <button type="button" class="rounded-full border border-slate-200 p-2 text-slate-500 transition hover:border-emerald-200 hover:text-emerald-600">
                   <svg aria-hidden="true" viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 21C12 21 4 13.5 4 8.5C4 5.42 6.42 3 9.5 3C11.24 3 12.91 3.81 14 5.08C15.09 3.81 16.76 3 18.5 3C21.58 3 24 5.42 24 8.5C24 13.5 16 21 16 21H12Z" />
@@ -57,9 +96,19 @@
 
             <div class="space-y-3">
               <h2 class="text-lg font-semibold text-slate-900">Omschrijving</h2>
-              <p class="text-slate-600 leading-relaxed">
-                {{ book()?.description || 'Geen beschrijving beschikbaar.' }}
-              </p>
+              @if (isEditMode()) {
+                <label for="description" class="sr-only">Omschrijving</label>
+                <textarea
+                  id="description"
+                  rows="4"
+                  [formControl]="editForm.controls.description"
+                  class="w-full rounded-xl border border-slate-300 px-3 py-2 text-slate-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+                ></textarea>
+              } @else {
+                <p class="text-slate-600 leading-relaxed">
+                  {{ book()?.description || 'Geen beschrijving beschikbaar.' }}
+                </p>
+              }
             </div>
 
             <div class="space-y-3">
@@ -67,30 +116,111 @@
               <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                   <p class="text-xs uppercase tracking-wide text-slate-500">Aantal bladzijden</p>
-                  <p class="text-base font-semibold text-slate-900">{{ book()?.amountOfPages ?? 'Onbekend' }}</p>
+                  @if (isEditMode()) {
+                    <input type="number" min="0" [formControl]="editForm.controls.amountOfPages" class="mt-1 w-full rounded-md border border-slate-300 px-2 py-1 text-base font-semibold text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" />
+                  } @else {
+                    <p class="text-base font-semibold text-slate-900">{{ book()?.amountOfPages ?? 'Onbekend' }}</p>
+                  }
                 </div>
                 <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                   <p class="text-xs uppercase tracking-wide text-slate-500">Jaar</p>
-                  <p class="text-base font-semibold text-slate-900">{{ book()?.publishedYear || 'Onbekend' }}</p>
+                  @if (isEditMode()) {
+                    <input type="number" min="0" [formControl]="editForm.controls.publishedYear" class="mt-1 w-full rounded-md border border-slate-300 px-2 py-1 text-base font-semibold text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" />
+                  } @else {
+                    <p class="text-base font-semibold text-slate-900">{{ book()?.publishedYear || 'Onbekend' }}</p>
+                  }
                 </div>
                 <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                   <p class="text-xs uppercase tracking-wide text-slate-500">Publicatiedatum</p>
-                  <p class="text-base font-semibold text-slate-900">{{ formatReleaseDate(book()?.releaseDate) }}</p>
+                  @if (isEditMode()) {
+                    <input type="date" [formControl]="editForm.controls.releaseDate" class="mt-1 w-full rounded-md border border-slate-300 px-2 py-1 text-base font-semibold text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" />
+                  } @else {
+                    <p class="text-base font-semibold text-slate-900">{{ formatReleaseDate(book()?.releaseDate) }}</p>
+                  }
                 </div>
                 <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                   <p class="text-xs uppercase tracking-wide text-slate-500">Genre</p>
-                  <p class="text-base font-semibold text-slate-900">{{ book()?.theme || 'Onbekend' }}</p>
+                  @if (isEditMode()) {
+                    <input type="text" [formControl]="editForm.controls.theme" class="mt-1 w-full rounded-md border border-slate-300 px-2 py-1 text-base font-semibold text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" />
+                  } @else {
+                    <p class="text-base font-semibold text-slate-900">{{ book()?.theme || 'Onbekend' }}</p>
+                  }
                 </div>
                 <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                   <p class="text-xs uppercase tracking-wide text-slate-500">Bibliotheek</p>
-                  <p class="text-base font-semibold text-slate-900">{{ book()?.libraryName || 'Onbekend' }}</p>
+                  @if (isEditMode()) {
+                    <select [formControl]="editForm.controls.libraryId" class="mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-base font-semibold text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200">
+                      <option [ngValue]="0" disabled>Selecteer een bibliotheek</option>
+                      @for (library of libraries(); track library.id) {
+                        <option [ngValue]="library.id">{{ library.name }}</option>
+                      }
+                    </select>
+                  } @else {
+                    <p class="text-base font-semibold text-slate-900">{{ book()?.libraryName || 'Onbekend' }}</p>
+                  }
                 </div>
                 <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                   <p class="text-xs uppercase tracking-wide text-slate-500">Leeftijdscategorie</p>
-                  <p class="text-base font-semibold text-slate-900">{{ book()?.ageCategory || 'Onbekend' }}</p>
+                  @if (isEditMode()) {
+                    <input type="text" [formControl]="editForm.controls.ageCategory" class="mt-1 w-full rounded-md border border-slate-300 px-2 py-1 text-base font-semibold text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" />
+                  } @else {
+                    <p class="text-base font-semibold text-slate-900">{{ book()?.ageCategory || 'Onbekend' }}</p>
+                  }
                 </div>
+                @if (isEditMode()) {
+                  <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <p class="text-xs uppercase tracking-wide text-slate-500">Auteur</p>
+                    <select [formControl]="editForm.controls.authorId" class="mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-base font-semibold text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200">
+                      <option [ngValue]="0" disabled>Selecteer een auteur</option>
+                      @for (author of authors(); track author.id) {
+                        <option [ngValue]="author.id">{{ authorLabel(author) }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <p class="text-xs uppercase tracking-wide text-slate-500">Prijs</p>
+                    <input type="number" min="0" step="0.01" [formControl]="editForm.controls.purchasePrice" class="mt-1 w-full rounded-md border border-slate-300 px-2 py-1 text-base font-semibold text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" />
+                  </div>
+                  <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <p class="text-xs uppercase tracking-wide text-slate-500">Aantal exemplaren</p>
+                    <input type="number" min="0" [formControl]="editForm.controls.duplicates" class="mt-1 w-full rounded-md border border-slate-300 px-2 py-1 text-base font-semibold text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" />
+                  </div>
+                  <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 sm:col-span-2 lg:col-span-3">
+                    <p class="text-xs uppercase tracking-wide text-slate-500">Status</p>
+                    <input type="text" [formControl]="editForm.controls.bookState" class="mt-1 w-full rounded-md border border-slate-300 px-2 py-1 text-base font-semibold text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" />
+                  </div>
+                }
               </div>
             </div>
+
+            @if (isEditMode()) {
+              <div class="pt-2">
+                @if (saveError()) {
+                  <div class="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{{ saveError() }}</div>
+                }
+                @if (saveSuccess()) {
+                  <div class="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{{ saveSuccess() }}</div>
+                }
+                <div class="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    class="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    [disabled]="!canSave()"
+                    (click)="saveBook()"
+                  >
+                    @if (isSaving()) { Opslaan... } @else { Opslaan }
+                  </button>
+                  <button
+                    type="button"
+                    class="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    [disabled]="isSaving()"
+                    (click)="cancelEdit()"
+                  >
+                    Annuleren
+                  </button>
+                </div>
+              </div>
+            }
           </div>
         </div>
       </div>

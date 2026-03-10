@@ -1,0 +1,77 @@
+<div class="p-4 md:p-6 bg-slate-50 min-h-screen font-sans w-full">
+  <div class="bg-white rounded-3xl shadow-sm p-6 md:p-8 w-full border border-gray-100">
+    <div class="mb-6 flex items-start justify-between gap-4">
+      <div>
+        <h1 class="text-[28px] font-bold text-slate-800 tracking-tight">Gebruiker detail</h1>
+        <p class="text-sm text-slate-500 mt-1">Detailweergave van een gebruiker.</p>
+      </div>
+      <a
+        routerLink="/admin/users"
+        class="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
+      >
+        Terug
+      </a>
+    </div>
+
+    @if (apiLoading()) {
+      <div class="flex items-center justify-center py-20">
+        <div class="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent"></div>
+      </div>
+    } @else if (apiError()) {
+      <div class="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+        {{ apiError() }}
+      </div>
+    } @else if (user()) {
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p class="text-xs text-slate-500 uppercase">Naam</p>
+          <p class="text-base font-semibold text-slate-900 mt-1">{{ fullName() }}</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p class="text-xs text-slate-500 uppercase">Geboortedatum</p>
+          <p class="text-base font-semibold text-slate-900 mt-1">{{ formatDate(user()?.birthDate) }}</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p class="text-xs text-slate-500 uppercase">Functie</p>
+          <p class="text-base font-semibold text-slate-900 mt-1">{{ user()?.functie || '-' }}</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p class="text-xs text-slate-500 uppercase">Rol</p>
+          <p class="text-base font-semibold text-slate-900 mt-1">{{ user()?.userRole || '-' }}</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p class="text-xs text-slate-500 uppercase">Account status</p>
+          <p class="text-base font-semibold text-slate-900 mt-1">{{ user()?.accountStatus || '-' }}</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p class="text-xs text-slate-500 uppercase">Badge code</p>
+          <p class="text-base font-semibold text-slate-900 mt-1">{{ user()?.badgeCode || '-' }}</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p class="text-xs text-slate-500 uppercase">Auth0 ID</p>
+          <p class="text-base font-semibold text-slate-900 mt-1 break-all">{{ user()?.auth0Id || '-' }}</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p class="text-xs text-slate-500 uppercase">Gender</p>
+          <p class="text-base font-semibold text-slate-900 mt-1">{{ user()?.gender || '-' }}</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p class="text-xs text-slate-500 uppercase">Land</p>
+          <p class="text-base font-semibold text-slate-900 mt-1">{{ user()?.country || '-' }}</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p class="text-xs text-slate-500 uppercase">Telefoon</p>
+          <p class="text-base font-semibold text-slate-900 mt-1">{{ user()?.phoneNumber || '-' }}</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p class="text-xs text-slate-500 uppercase">Voorkeurstaal</p>
+          <p class="text-base font-semibold text-slate-900 mt-1">{{ user()?.preferredLanguage || '-' }}</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p class="text-xs text-slate-500 uppercase">Actieve bibliotheek ID</p>
+          <p class="text-base font-semibold text-slate-900 mt-1">{{ user()?.activeLibraryId ?? '-' }}</p>
+        </div>
+      </div>
+    }
+  </div>
+</div>
