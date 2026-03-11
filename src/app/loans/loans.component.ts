@@ -6,6 +6,7 @@ import { AuthService } from '@auth0/auth0-angular';
 import { environment } from '../../environments/environment';
 import { Loan } from '../models/Loan';
 import { Page } from '../models/Page';
+import { getLoanStatusLabel, getLoanStatusColor } from '../utils/status';
 
 
 interface BookSummary {
@@ -84,30 +85,12 @@ export class LoansComponent {
   }
 
   protected statusLabel(status: string): string {
-    if (!status) {
-      return 'Onbekend';
-    }
-
-    return status.toUpperCase();
+    return getLoanStatusLabel(status);
   }
 
   protected statusClass(status: string): string {
-    const base = 'inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold';
-    const value = (status ?? '').toUpperCase();
-
-    if (value === 'RETURNED' || value === 'COMPLETED') {
-      return `${base} bg-emerald-100 text-emerald-700`;
-    }
-
-    if (value === 'OVERDUE' || value === 'LATE') {
-      return `${base} bg-red-100 text-red-700`;
-    }
-
-    if (value === 'ACTIVE' || value === 'BORROWED' || value === 'OPEN') {
-      return `${base} bg-amber-100 text-amber-700`;
-    }
-
-    return `${base} bg-gray-100 text-gray-700`;
+    const base = 'inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold border';
+    return `${base} ${getLoanStatusColor(status)}`;
   }
 
   protected bookTitle(bookId: number): string {

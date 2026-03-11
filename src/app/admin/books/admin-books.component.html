@@ -75,42 +75,15 @@
               (keydown.enter)="openBookDetails(book.id, false)"
             >
               <td class="py-5 px-6 text-[15px] font-medium text-gray-500">{{ book.isbn }}</td>
-              <td class="py-5 px-6 text-[15px] text-gray-800 font-medium">{{ book.title }}</td>
+              <td class="py-5 px-6 text-[15px] text-gray-800 font-medium">
+                <a [routerLink]="['/admin/books', book.id]" class="hover:text-blue-600 hover:underline cursor-pointer">
+                  {{ book.title }}
+                </a>
+              </td>
               <td class="py-5 px-6 text-[15px] font-medium text-gray-800">{{ book.authorName }}</td>
               <td class="py-5 px-6 text-[15px] font-medium text-gray-600">{{ book.theme | lowercase }}</td>
               <td class="py-5 px-6">
-                @switch (book.bookState) {
-                  @case ('AVAILABLE') {
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold bg-[#e6f7ec] text-[#2ebd6b]">
-                      Beschikbaar
-                    </span>
-                  }
-                  @case ('TEMPORARILYUNAVAILABLE') {
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold bg-[#fff8e1] text-[#fbc02d]">
-                      tijdelijk niet beschikbaar
-                    </span>
-                  }
-                  @case ('BORROWED') {
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold bg-[#fff8e1] text-[#fbc02d]">
-                      tijdelijk niet beschikbaar
-                    </span>
-                  }
-                  @case ('PERMANENTLYUNAVAILABLE') {
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold bg-[#ffebee] text-[#e53935]">
-                      nooit meer beschikbaar
-                    </span>
-                  }
-                  @case ('LOST') {
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold bg-[#ffebee] text-[#e53935]">
-                      nooit meer beschikbaar
-                    </span>
-                  }
-                  @default {
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold bg-gray-100 text-gray-600">
-                      Onbekend
-                    </span>
-                  }
-                }
+                 <span [class]="bookStateColor(book.bookState)">{{ bookStateLabel(book.bookState) }}</span>
               </td>
               <td class="py-5 px-6 text-[15px] font-medium text-gray-800">€{{ book.purchasePrice?.toFixed(2) || '0.00' }}</td>
               <td class="py-5 px-6 text-right">
