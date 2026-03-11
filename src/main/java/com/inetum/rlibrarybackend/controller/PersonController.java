@@ -53,6 +53,28 @@ public class PersonController implements PersonsApi {
 
     @Override
     @PreAuthorize("hasAnyRole('WERKNEMER', 'VERANTWOORDELIJKE')")
+    public ResponseEntity<PersonDto> personsAuth0Auth0IdGet(String auth0Id) {
+        log.info("GET /persons/auth0/{} requested", auth0Id);
+        if (!currentUserService.currentUserIsStaff()) {
+            var currentPerson = currentUserService.getCurrentPerson();
+            if (!currentPerson.getAuth0Id().equals(auth0Id)) {
+                log.warn("Access denied: auth0Id={} tried to access auth0Id={}", currentPerson.getAuth0Id(), auth0Id);
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only access your own data");
+            }
+        }
+        return personService.findPersonByAuth0Id(auth0Id)
+                .map(dto -> {
+                    log.debug("GET /persons/auth0/{} found", auth0Id);
+                    return ResponseEntity.ok(dto);
+                })
+                .orElseGet(() -> {
+                    log.warn("GET /persons/auth0/{} not found", auth0Id);
+                    return ResponseEntity.notFound().build();
+                });
+    }
+
+    @Override
+    @PreAuthorize("hasAnyRole('WERKNEMER', 'VERANTWOORDELIJKE')")
     public ResponseEntity<PersonDto> personsIdGet(Long id) {
         log.info("GET /persons/{} requested", id);
         // Regular users can only fetch their own record

@@ -30,7 +30,7 @@ public class BookController implements BooksApi {
     @Override
     @PreAuthorize("hasAnyRole('WERKNEMER', 'VERANTWOORDELIJKE')")
     public ResponseEntity<PagedBookResponse> booksGet(Integer page, Integer size, String sort, String direction, String title, Integer minAmountOfPages, Integer maxAmountOfPages, ThemeType themeType, Long libraryId) {
-        int p = page != null ? page : 0;//default staat ook in apispec
+        int p = page != null ? page : 0;
         int s = size != null ? size : 10;
         String sortField = (sort != null && !sort.isBlank()) ? sort : "title";
         String dir = (direction != null && !direction.isBlank()) ? direction : "asc";
@@ -53,6 +53,21 @@ public class BookController implements BooksApi {
         );
         log.debug("GET /books returned {} items", booksPage.getContent().size());
         return ResponseEntity.ok(response);
+    }
+
+    @Override
+    @PreAuthorize("hasAnyRole('WERKNEMER', 'VERANTWOORDELIJKE')")
+    public ResponseEntity<BookDto> booksIsbnIsbnGet(String isbn) {
+        log.info("GET /books/isbn/{} requested", isbn);
+        return bookService.findBookByIsbn(isbn)
+                .map(dto -> {
+                    log.debug("GET /books/isbn/{} found", isbn);
+                    return ResponseEntity.ok(dto);
+                })
+                .orElseGet(() -> {
+                    log.warn("GET /books/isbn/{} not found", isbn);
+                    return ResponseEntity.notFound().build();
+                });
     }
 
     @Override

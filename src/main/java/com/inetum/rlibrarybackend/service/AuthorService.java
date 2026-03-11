@@ -40,15 +40,6 @@ public class AuthorService {
                 .map(this::mapEntityToDto);
     }
 
-    public List<AuthorDto> getAllAuthors(int page, int size) {
-        log.debug("Fetching authors page={} size={}", page, size);
-        List<AuthorDto> authors = authorRepository.findAll(PageRequest.of(page, size)).stream()
-                .map(this::mapEntityToDto)
-                .toList();
-        log.debug("Fetched {} authors", authors.size());
-        return authors;
-    }
-
     public AuthorDto createAuthor(AuthorDto authorDto) {
         log.debug("Creating author");
         Author entity = mapDtoToEntity(authorDto);
