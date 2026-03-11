@@ -7,6 +7,7 @@ import { LoansComponent } from './loans/loans.component';
 import { StatsComponent } from './stats/stats.component';
 import { SettingsComponent } from './settings/settings.component';
 import { AdminLoansComponent } from './admin/loans/admin-loans.component';
+import { AdminLoanEditComponent } from './admin/loans/edit/admin-loan-edit.component';
 import { AdminBooksComponent } from './admin/books/admin-books.component';
 import { AdminStatsComponent } from './admin/stats/admin-stats.component';
 import { BookDetailComponent } from './book-detail/book-detail.component';
@@ -53,6 +54,11 @@ export const routes: Routes = [
   {
     path: 'admin/loans',
     component: AdminLoansComponent,
+    canActivate: [authGuardFn, adminGuard],
+  },
+  {
+    path: 'admin/loans/:id/edit',
+    component: AdminLoanEditComponent,
     canActivate: [authGuardFn, adminGuard],
   },
   {

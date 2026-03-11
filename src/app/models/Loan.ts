@@ -1,4 +1,4 @@
-interface Loan {
+export interface Loan {
   id: number;
   loanDate: string;
   returnDate: string;

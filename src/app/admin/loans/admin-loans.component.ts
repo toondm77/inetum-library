@@ -1,24 +1,29 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { RouterLink } from '@angular/router';
 import { environment } from '../../../environments/environment';
+import { Loan } from '../../models/Loan';
+import { Page } from '../../models/Page';
 
-interface Page<T> {
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  items: T[];
+import { AdminLoanCreateComponent } from './create/admin-loan-create.component';
+
+interface BookSummary {
+  id: number;
+  title: string;
 }
 
 @Component({
   selector: 'app-admin-loans',
-  standalone: true,
+  imports: [CommonModule, RouterLink, AdminLoanCreateComponent],
   templateUrl: './admin-loans.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminLoansComponent {
   private readonly http = inject(HttpClient);
   private readonly apiBase = environment.apiBase;
+
+  protected readonly isCreatingLoan = signal(false);
 
   protected readonly loans = signal<Loan[]>([]);
   protected readonly apiLoading = signal(false);
@@ -27,6 +32,10 @@ export class AdminLoansComponent {
   protected readonly currentPage = signal(0);
   protected readonly totalPages = signal(0);
   protected readonly pageSize = signal(20);
+  protected readonly bookTitlesById = signal<Record<number, string>>({});
+
+  protected readonly loanToDelete = signal<Loan | null>(null);
+  protected readonly isDeleting = signal(false);
 
   constructor() {
     this.loadRecentLoans();
@@ -44,13 +53,16 @@ export class AdminLoansComponent {
 
     this.http.get<Page<Loan>>(`${this.apiBase}/loans`, { params }).subscribe({
       next: (response) => {
-        this.loans.set(response.items ?? []);
+        const loadedLoans = response.items ?? [];
+        this.loans.set(loadedLoans);
+        this.loadBookTitlesForLoans(loadedLoans);
         this.totalElements.set(response.totalElements ?? 0);
         this.totalPages.set(response.totalPages ?? 0);
         this.apiLoading.set(false);
       },
       error: () => {
         this.loans.set([]);
+        this.bookTitlesById.set({});
         this.totalElements.set(0);
         this.totalPages.set(0);
         this.apiError.set('Kon recente uitleningen niet laden.');
@@ -90,11 +102,104 @@ export class AdminLoansComponent {
     return parsed.toLocaleDateString('nl-BE');
   }
 
+  protected confirmDelete(loan: Loan): void {
+    this.loanToDelete.set(loan);
+  }
+
+  protected executeDelete(): void {
+    const loan = this.loanToDelete();
+    if (!loan) return;
+
+    this.isDeleting.set(true);
+    this.http.delete(`${this.apiBase}/loans/${loan.id}`).subscribe({
+      next: () => {
+        this.isDeleting.set(false);
+        this.loanToDelete.set(null);
+        this.loadRecentLoans(); // Ververs data
+      },
+      error: (err) => {
+        console.error('Kon uitlening niet verwijderen', err);
+        this.isDeleting.set(false);
+        this.loanToDelete.set(null);
+        this.apiError.set('Fout bij het verwijderen van de uitlening.');
+      }
+    });
+  }
+
   protected statusLabel(status: string): string {
     if (!status) {
       return 'Onbekend';
     }
 
     return status.toUpperCase();
+  }
+
+  protected statusClass(status: string): string {
+    const base = 'inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold';
+    const value = (status ?? '').toUpperCase();
+
+    if (value === 'RETURNED' || value === 'COMPLETED') {
+      return `${base} bg-emerald-100 text-emerald-700`;
+    }
+
+    if (value === 'OVERDUE' || value === 'LATE') {
+      return `${base} bg-red-100 text-red-700`;
+    }
+
+    if (value === 'ACTIVE' || value === 'BORROWED' || value === 'OPEN') {
+      return `${base} bg-amber-100 text-amber-700`;
+    }
+
+    return `${base} bg-gray-100 text-gray-700`;
+  }
+
+  protected personLabel(loan: Loan): string {
+    if (loan.personName && loan.personName.trim().length > 0) {
+      return loan.personName;
+    }
+
+    return `Persoon #${loan.personId}`;
+  }
+
+  protected bookTitle(bookId: number): string {
+    return this.bookTitlesById()[bookId] ?? `Boek #${bookId}`;
+  }
+
+  private loadBookTitlesForLoans(loans: Loan[]): void {
+    const uniqueBookIds: number[] = [];
+
+    for (const loan of loans) {
+      for (const bookId of loan.bookIds ?? []) {
+        if (typeof bookId === 'number' && bookId > 0 && !uniqueBookIds.includes(bookId)) {
+          uniqueBookIds.push(bookId);
+        }
+      }
+    }
+
+    if (uniqueBookIds.length === 0) {
+      this.bookTitlesById.set({});
+      return;
+    }
+
+    const titleMap: Record<number, string> = {};
+    let finishedCount = 0;
+
+    for (const bookId of uniqueBookIds) {
+      this.http.get<BookSummary>(`${this.apiBase}/books/${bookId}`).subscribe({
+        next: (book) => {
+          titleMap[bookId] = book.title || `Boek #${bookId}`;
+        },
+        error: () => {
+          titleMap[bookId] = `Boek #${bookId}`;
+        },
+        complete: () => {
+          finishedCount += 1;
+
+          if (finishedCount === uniqueBookIds.length) {
+            this.bookTitlesById.set(titleMap);
+          }
+        },
+      });
+    }
   }
 }

@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { Book, Page } from '../../models/book.model';
+import { Book} from '../../models/book.model';
+import { Page } from '../../models/Page';
 
 @Component({
   selector: 'app-admin-books',

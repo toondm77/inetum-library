@@ -3,19 +3,12 @@ import { CommonModule } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
+import { Person } from '../../models/Person';
+import { Page } from '../../models/Page';
 
-
-interface Page<T> {
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  items: T[];
-}
 
 @Component({
   selector: 'app-admin-users',
-  standalone: true,
   imports: [CommonModule],
   templateUrl: './admin-users.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
