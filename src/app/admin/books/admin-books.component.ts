@@ -1,14 +1,15 @@
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { Book} from '../../models/book.model';
 import { Page } from '../../models/Page';
+import { getBookStateLabel, getBookStateColor } from '../../utils/status';
 
 @Component({
   selector: 'app-admin-books',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './admin-books.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -31,6 +32,15 @@ export class AdminBooksComponent {
   protected readonly deletingBookId = signal<number | null>(null);
 
   protected readonly visibleBooks = this.books;
+
+  public bookStateLabel(state: string | undefined): string {
+    return getBookStateLabel(state);
+  }
+
+  public bookStateColor(state: string | undefined): string {
+    const base = 'inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold border';
+    return `${base} ${getBookStateColor(state)}`;
+  }
 
   constructor() {
     this.loadBooks();
