@@ -60,20 +60,16 @@ public class BookService {
                 .map(this::mapEntityToDto);
     }
 
-    public List<BookDto> getAllBooks() {
-        log.debug("Fetching all books");
-        List<BookDto> books = bookRepository.findAll().stream()
-                .map(this::mapEntityToDto)
-                .toList();
-        log.debug("Fetched {} books", books.size());
-        return books;
-    }
-
     public Optional<BookDto> findBookById(Long id) {
         log.debug("Finding book id={}", id);
         return bookRepository.findById(id.intValue())
                 .map(this::mapEntityToDto)
                 .or(Optional::empty);
+    }
+
+    public Optional<BookDto> findBookByIsbn(String isbn) {
+        log.debug("Finding book isbn={}", isbn);
+        return bookRepository.findByIsbn(isbn).map(this::mapEntityToDto);
     }
 
 
@@ -155,21 +151,6 @@ public class BookService {
                 .map(this::mapEntityToDto);
         log.debug("Fetched {} books for library id={}", books.getContent().size(), libraryId);
         return books;
-    }
-
-    public List<BookDto> getBooksByLibraryId(Long libraryId) {
-        log.debug("Fetching books for library id={}", libraryId);
-        List<BookDto> books = bookRepository.findByLibraryId(libraryId.intValue()).stream()
-                .map(this::mapEntityToDto)
-                .toList();
-        log.debug("Fetched {} books for library id={}", books.size(), libraryId);
-        return books;
-    }
-
-    public boolean libraryExists(Long libraryId) {
-        boolean exists = libraryId != null && libraryRepository.existsById(libraryId.intValue());
-        log.debug("Library id={} exists={}", libraryId, exists);
-        return exists;
     }
 
     private BookDto mapEntityToDto(Book book) {

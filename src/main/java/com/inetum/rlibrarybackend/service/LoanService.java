@@ -146,6 +146,14 @@ public class LoanService {
         if (bookIds == null || bookIds.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "At least one book id is required");
         }
+        for (int i = 0; i < bookIds.size(); i++) {
+            for (int j = i + 1; j < bookIds.size(); j++) {
+                if (bookIds.get(i).equals(bookIds.get(j))) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "A loan cannot contain the same book more than once. Duplicate book id: " + bookIds.get(i));
+                }
+            }
+        }
         return bookIds.stream()
                 .map(bookId -> bookRepository.findById(bookId.intValue())
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Book not found: id=" + bookId)))

@@ -237,6 +237,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /books/isbn/{isbn}:
+    get:
+      summary: Get book by ISBN
+      operationId: booksIsbnIsbnGet
+      tags:
+        - Book
+      parameters:
+        - name: isbn
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Book found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookDto'
+        '404':
+          description: Book not found
   /books/{id}:
     get:
       summary: Get book by ID
@@ -719,6 +740,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /persons/auth0/{auth0Id}:
+    get:
+      summary: Get person by Auth0 ID
+      operationId: personsAuth0Auth0IdGet
+      tags:
+        - Person
+      parameters:
+        - name: auth0Id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Person found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonDto'
+        '404':
+          description: Person not found
   /persons/{id}:
     get:
       summary: Get person by ID

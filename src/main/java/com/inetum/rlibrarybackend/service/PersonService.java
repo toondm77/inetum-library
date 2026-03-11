@@ -49,6 +49,11 @@ public class PersonService {
         return personRepository.findById(id.intValue()).map(this::mapEntityToDto);
     }
 
+    public Optional<PersonDto> findPersonByAuth0Id(String auth0Id) {
+        log.debug("Finding person auth0Id={}", auth0Id);
+        return personRepository.findByAuth0Id(auth0Id).map(this::mapEntityToDto);
+    }
+
     public PersonDto createPerson(PersonDto dto) {
         // Validate birthdate must be before today
         if (dto.getBirthDate() != null && !dto.getBirthDate().isBefore(LocalDate.now())) {

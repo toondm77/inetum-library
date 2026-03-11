@@ -8,9 +8,11 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BookRepository extends JpaRepository<Book, Integer>, JpaSpecificationExecutor<Book> {
     List<Book> findByLibraryId(Integer libraryId);
     Page<Book> findByLibraryId(Integer libraryId, Pageable pageable);
+    Optional<Book> findByIsbn(String isbn);
 }
