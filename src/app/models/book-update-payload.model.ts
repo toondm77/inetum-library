@@ -12,4 +12,5 @@ export interface BookUpdatePayload {
   ageCategory: string;
   purchasePrice: number;
   duplicates: number;
+    coverImage?: string;
 }

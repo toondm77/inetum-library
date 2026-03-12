@@ -4,7 +4,7 @@ import { FormBuilder, ReactiveFormsModule, ValidatorFn, Validators } from '@angu
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 import { environment } from '../../../environments/environment';
-import { Book } from '../../models/book.model';
+import { Book } from '../../models/Book';
 
 interface AuthorOption {
   id: number;
@@ -77,6 +77,7 @@ export class AdminAddBookComponent {
     bookState: ['AVAILABLE', [Validators.required]],
     ageCategory: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(40)]],
     purchasePrice: [0, [Validators.required, Validators.min(0), Validators.max(99999)]],
+    coverImage: [''],
   }, { validators: [this.releaseYearMatchesPublishedYearValidator()] });
 
   protected readonly authorForm = this.fb.group({
@@ -107,6 +108,26 @@ export class AdminAddBookComponent {
     });
 
     this.loadOptions();
+  }
+
+  protected onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        let base64 = reader.result as string;
+        const commaIndex = base64.indexOf(',');
+        if (commaIndex !== -1) {
+          base64 = base64.substring(commaIndex + 1);
+        }
+        this.form.patchValue({ coverImage: base64 });
+        this.form.get('coverImage')?.markAsDirty();
+      };
+
+      reader.readAsDataURL(file);
+    }
   }
 
   protected submit(): void {
@@ -149,6 +170,8 @@ export class AdminAddBookComponent {
       bookState: value.bookState!,
       ageCategory: value.ageCategory!.trim(),
       purchasePrice: Number(value.purchasePrice),
+      duplicates: 1,
+      coverImage: value.coverImage || undefined,
     };
 
     this.saving.set(true);

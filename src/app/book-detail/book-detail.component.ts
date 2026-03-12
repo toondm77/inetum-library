@@ -5,9 +5,9 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, switchMap, tap } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { environment } from '../../environments/environment';
-import { Book } from '../models/book.model';
 import { RoleService } from '../services/role.service';
 import { BookUpdatePayload } from '../models/book-update-payload.model';
+import { Book } from '../models/Book';
 
 interface AuthorOption {
   id: number;
@@ -70,6 +70,7 @@ export class BookDetailComponent {
     ageCategory: [''],
     purchasePrice: [0, [Validators.required, Validators.min(0)]],
     duplicates: [0, [Validators.required, Validators.min(0)]],
+    coverImage: [''],
   });
 
   constructor() {
@@ -114,6 +115,26 @@ export class BookDetailComponent {
     if (!date) return 'Onbekend';
     const parsed = new Date(date);
     return Number.isNaN(parsed.getTime()) ? date : parsed.toLocaleDateString();
+  }
+
+  protected onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        let base64 = reader.result as string;
+        const commaIndex = base64.indexOf(',');
+        if (commaIndex !== -1) {
+          base64 = base64.substring(commaIndex + 1);
+        }
+        this.editForm.patchValue({ coverImage: base64 });
+        this.editForm.get('coverImage')?.markAsDirty();
+      };
+
+      reader.readAsDataURL(file);
+    }
   }
 
   protected saveBook(): void {
@@ -202,6 +223,7 @@ export class BookDetailComponent {
       ageCategory: book.ageCategory ?? '',
       purchasePrice: book.purchasePrice ?? 0,
       duplicates: book.duplicates ?? 0,
+      coverImage: book.coverImage ?? '',
     });
   }
 
@@ -278,6 +300,7 @@ export class BookDetailComponent {
       ageCategory: formValue.ageCategory,
       purchasePrice: this.ensureNumber(formValue.purchasePrice, currentBook.purchasePrice ?? 0),
       duplicates: this.ensureNumber(formValue.duplicates, currentBook.duplicates ?? 0),
+      coverImage: formValue.coverImage || undefined,
     };
   }
 

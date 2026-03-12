@@ -6,8 +6,8 @@ import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, FormsModule } 
 import { environment } from '../../../../environments/environment';
 import { Loan } from '../../../models/Loan';
 import { Person } from '../../../models/Person';
-import { Book } from '../../../models/Book';
 import { Page } from '../../../models/Page';
+import { Book } from '../../../models/Book';
 
 @Component({
   selector: 'app-admin-loan-edit',

@@ -7,7 +7,7 @@ import { environment } from '../../environments/environment';
 import { Loan } from '../models/Loan';
 import { Page } from '../models/Page';
 import { getLoanStatusLabel, getLoanStatusColor } from '../utils/status';
-
+import { AdminLoanCreateComponent } from '../admin/loans/create/admin-loan-create.component';
 
 interface BookSummary {
   id: number;
@@ -21,7 +21,7 @@ interface PersonSummary {
 
 @Component({
   selector: 'app-loans',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, AdminLoanCreateComponent],
   templateUrl: './loans.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -29,7 +29,7 @@ export class LoansComponent {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
   private readonly apiBase = environment.apiBase;
-
+protected readonly isCreatingLoan = signal(false);
   protected readonly loans = signal<Loan[]>([]);
   protected readonly apiLoading = signal(false);
   protected readonly apiError = signal<string | null>(null);
@@ -71,7 +71,7 @@ export class LoansComponent {
     this.loadMyLoans();
   }
 
-  protected formatDate(value: string): string {
+  protected formatDate(value: string | null): string {
     if (!value) {
       return '-';
     }
@@ -81,12 +81,10 @@ export class LoansComponent {
       return value;
     }
 
-    return parsed.toLocaleString('nl-BE', {
+    return parsed.toLocaleDateString('nl-BE', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      year: 'numeric'
     });
   }
 
@@ -95,7 +93,7 @@ export class LoansComponent {
   }
 
   protected statusClass(status: string): string {
-    const base = 'inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold border';
+    const base = 'inline-flex items-center px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-[13px] font-semibold border';
     return `${base} ${getLoanStatusColor(status)}`;
   }
 
@@ -157,7 +155,7 @@ export class LoansComponent {
     });
   }
 
-  private loadMyLoans(): void {
+  protected loadMyLoans(): void {
     const personId = this.currentPersonId();
     if (!personId) {
       this.apiError.set('Geen persoon geselecteerd.');
