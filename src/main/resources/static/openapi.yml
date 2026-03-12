@@ -9,6 +9,21 @@ servers:
   - url: /api
   - url: http://localhost:8080/api
 paths:
+  /theme-types:
+    get:
+      summary: Get all theme types
+      operationId: themeTypesGet
+      tags:
+        - ThemeType
+      responses:
+        '200':
+          description: List of theme types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ThemeType'
   /authors:
     get:
       summary: Get all authors
