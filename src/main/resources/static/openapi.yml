@@ -958,10 +958,10 @@ components:
           readOnly: true
         loanDate:
           type: string
-          format: date
+          format: date-time
         returnDate:
           type: string
-          format: date
+          format: date-time
         status:
           type: string
         personId:
