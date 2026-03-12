@@ -142,8 +142,7 @@ export class AdminLoanCreateComponent {
         this.loanCreated.emit();
       },
       error: (err) => {
-        console.error('API Error when submitting loan:', err);
-        this.error.set('Kan uitlening niet voltooien');
+        this.error.set(err.error?.message || 'Kan de uitlening niet voltooien');
         this.isLoading.set(false);
       }
     });

@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { Book} from '../../models/book.model';
 import { Page } from '../../models/Page';
 import { getBookStateLabel, getBookStateColor } from '../../utils/status';
+import { Book } from '../../models/Book';
 
 @Component({
   selector: 'app-admin-books',

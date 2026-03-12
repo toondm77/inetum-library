@@ -90,7 +90,7 @@ export class AdminLoansComponent {
     this.loadRecentLoans();
   }
 
-  protected formatDate(value: string): string {
+  protected formatDate(value: string | null): string {
     if (!value) {
       return '-';
     }
@@ -100,12 +100,10 @@ export class AdminLoansComponent {
       return value;
     }
 
-    return parsed.toLocaleString('nl-BE', {
+    return parsed.toLocaleDateString('nl-BE', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      year: 'numeric'
     });
   }
 
@@ -138,7 +136,7 @@ export class AdminLoansComponent {
   }
 
   protected statusClass(status: string): string {
-    const base = 'inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold border';
+    const base = 'inline-flex items-center px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-[13px] font-semibold border';
     return `${base} ${getLoanStatusColor(status)}`;
   }
 

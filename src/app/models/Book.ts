@@ -15,4 +15,5 @@ export interface Book {
   ageCategory: string;
   purchasePrice: number;
   duplicates: number;
+  coverImage?: string;
 }

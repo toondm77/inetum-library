@@ -2,9 +2,9 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
-import { Book } from '../models/book.model';
 import { BookCardComponent } from '../book-card/book-card.component';
 import { Page } from '../models/Page';
+import { Book } from '../models/Book';
 
 @Component({
   selector: 'app-homepage',
