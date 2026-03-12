@@ -15,7 +15,7 @@
         />
       </div>
 
-      <button class="flex items-center gap-2 bg-[#00A896] hover:bg-teal-600 text-white px-8 py-4 rounded-full font-medium transition-colors ml-4 whitespace-nowrap shadow-sm">
+      <button class="flex items-center gap-2 bg-[#00A896] hover:bg-teal-600 text-white px-8 py-4 rounded-full font-medium transition-colors ml-4 whitespace-nowrap shadow-sm" (click)="openAddBook()">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
@@ -69,58 +69,37 @@
           @for (book of visibleBooks(); track book.id) {
             <tr
               class="border-b border-gray-100 hover:bg-slate-50/60 transition-colors group cursor-pointer active:scale-[0.998]"
-              (click)="openBookDetails(book.id)"
+              (click)="openBookDetails(book.id, false)"
               tabindex="0"
               role="button"
-              (keydown.enter)="openBookDetails(book.id)"
+              (keydown.enter)="openBookDetails(book.id, false)"
             >
               <td class="py-5 px-6 text-[15px] font-medium text-gray-500">{{ book.isbn }}</td>
-              <td class="py-5 px-6 text-[15px] text-gray-800 font-medium">{{ book.title }}</td>
+              <td class="py-5 px-6 text-[15px] text-gray-800 font-medium">
+                <a [routerLink]="['/admin/books', book.id]" class="hover:text-blue-600 hover:underline cursor-pointer">
+                  {{ book.title }}
+                </a>
+              </td>
               <td class="py-5 px-6 text-[15px] font-medium text-gray-800">{{ book.authorName }}</td>
               <td class="py-5 px-6 text-[15px] font-medium text-gray-600">{{ book.theme | lowercase }}</td>
               <td class="py-5 px-6">
-                @switch (book.bookState) {
-                  @case ('AVAILABLE') {
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold bg-[#e6f7ec] text-[#2ebd6b]">
-                      Beschikbaar
-                    </span>
-                  }
-                  @case ('TEMPORARILYUNAVAILABLE') {
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold bg-[#fff8e1] text-[#fbc02d]">
-                      tijdelijk niet beschikbaar
-                    </span>
-                  }
-                  @case ('BORROWED') {
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold bg-[#fff8e1] text-[#fbc02d]">
-                      tijdelijk niet beschikbaar
-                    </span>
-                  }
-                  @case ('PERMANENTLYUNAVAILABLE') {
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold bg-[#ffebee] text-[#e53935]">
-                      nooit meer beschikbaar
-                    </span>
-                  }
-                  @case ('LOST') {
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold bg-[#ffebee] text-[#e53935]">
-                      nooit meer beschikbaar
-                    </span>
-                  }
-                  @default {
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold bg-gray-100 text-gray-600">
-                      Onbekend
-                    </span>
-                  }
-                }
+                 <span [class]="bookStateColor(book.bookState)">{{ bookStateLabel(book.bookState) }}</span>
               </td>
               <td class="py-5 px-6 text-[15px] font-medium text-gray-800">€{{ book.purchasePrice?.toFixed(2) || '0.00' }}</td>
               <td class="py-5 px-6 text-right">
                 <div class="flex items-center justify-end gap-4 text-gray-400">
-                  <button class="hover:text-indigo-500 transition-colors" title="Bewerken" aria-label="Bewerken" (click)="$event.stopPropagation()">
+                  <button class="hover:text-indigo-500 transition-colors" title="Bewerken" aria-label="Bewerken" (click)="$event.stopPropagation(); openBookDetails(book.id, true)">
                     <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                     </svg>
                   </button>
-                  <button class="hover:text-red-500 transition-colors" title="Verwijderen" aria-label="Verwijderen" (click)="$event.stopPropagation()">
+                  <button
+                    class="hover:text-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Verwijderen"
+                    aria-label="Verwijderen"
+                    [disabled]="deletingBookId() === book.id"
+                    (click)="$event.stopPropagation(); deleteBook(book.id)"
+                  >
                     <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>

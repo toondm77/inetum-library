@@ -1,13 +1,15 @@
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { Book, Page } from '../../models/book.model';
+import { Book} from '../../models/book.model';
+import { Page } from '../../models/Page';
+import { getBookStateLabel, getBookStateColor } from '../../utils/status';
 
 @Component({
   selector: 'app-admin-books',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './admin-books.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -27,8 +29,18 @@ export class AdminBooksComponent {
   protected readonly pageSizeOptions = [10, 20, 50, 100];
   protected readonly apiLoading = signal(false);
   protected readonly apiError = signal<string | null>(null);
+  protected readonly deletingBookId = signal<number | null>(null);
 
   protected readonly visibleBooks = this.books;
+
+  public bookStateLabel(state: string | undefined): string {
+    return getBookStateLabel(state);
+  }
+
+  public bookStateColor(state: string | undefined): string {
+    const base = 'inline-flex items-center px-3 py-1 rounded-full text-[13px] font-semibold border';
+    return `${base} ${getBookStateColor(state)}`;
+  }
 
   constructor() {
     this.loadBooks();
@@ -136,7 +148,40 @@ export class AdminBooksComponent {
     });
   }
 
-  protected openBookDetails(bookId: number): void {
-    this.router.navigate(['/books', bookId]);
+  protected openBookDetails(bookId: number, openInEditMode = false): void {
+    this.router.navigate(['/books', bookId], {
+      queryParams: openInEditMode ? { edit: 1 } : {},
+    });
+  }
+
+  protected openAddBook(): void {
+    this.router.navigate(['/admin/books/add']);
+  }
+
+  protected deleteBook(bookId: number): void {
+    const isConfirmed = window.confirm('Ben je zeker dat je dit boek wilt verwijderen?');
+    if (!isConfirmed) {
+      return;
+    }
+
+    this.apiError.set(null);
+    this.deletingBookId.set(bookId);
+
+    this.http.delete<void>(`${this.apiBase}/books/${bookId}`).subscribe({
+      next: () => {
+        this.deletingBookId.set(null);
+
+        const remainingItemsOnPage = this.books().length - 1;
+        if (remainingItemsOnPage <= 0 && this.currentPage() > 0) {
+          this.currentPage.update((page) => page - 1);
+        }
+
+        this.loadBooks();
+      },
+      error: () => {
+        this.deletingBookId.set(null);
+        this.apiError.set('Verwijderen mislukt. Probeer opnieuw.');
+      },
+    });
   }
 }
