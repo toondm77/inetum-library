@@ -81,7 +81,13 @@ export class LoansComponent {
       return value;
     }
 
-    return parsed.toLocaleDateString('nl-BE');
+    return parsed.toLocaleString('nl-BE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
 
   protected statusLabel(status: string): string {

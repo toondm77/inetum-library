@@ -166,7 +166,8 @@ export class AdminLoanEditComponent implements OnInit {
     const values = this.loanForm.getRawValue();
     const payload = {
       ...values,
-      returnDate: values.returnDate || null,
+      loanDate: values.loanDate ? new Date(values.loanDate).toISOString() : null,
+      returnDate: values.returnDate ? new Date(values.returnDate).toISOString() : null,
       loanRuleId: values.loanRuleId || null
     };
 

@@ -128,7 +128,7 @@ export class AdminLoanCreateComponent {
     const today = new Date();
 
     const payload = {
-      loanDate: today.toISOString().split('T')[0],
+      loanDate: new Date(today.toISOString().split('T')[0]),
       returnDate: null,
       status: "LOANED", 
       personId: currentPerson.id,

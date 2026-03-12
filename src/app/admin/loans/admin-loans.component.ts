@@ -100,7 +100,13 @@ export class AdminLoansComponent {
       return value;
     }
 
-    return parsed.toLocaleDateString('nl-BE');
+    return parsed.toLocaleString('nl-BE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
 
   protected confirmDelete(loan: Loan): void {
