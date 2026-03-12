@@ -30,7 +30,6 @@ public class PersonController implements PersonsApi {
     @Override
     @PreAuthorize("hasAnyRole('WERKNEMER', 'VERANTWOORDELIJKE')")
     public ResponseEntity<PagedPersonResponse> personsGet(Integer page, Integer size, String sort, String direction, String lastName, String accountStatus) {
-        // Regular users cannot list all persons
         if (!currentUserService.currentUserIsStaff()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only access your own data");
         }
