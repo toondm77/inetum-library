@@ -19,7 +19,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,10 +35,10 @@ public class Loan {
 
     @NotNull
     @PastOrPresent
-    private LocalDate loanDate;
+    private LocalDateTime loanDate;
 
     @PastOrPresent
-    private LocalDate returnDate;
+    private LocalDateTime returnDate;
 
     @NotNull
     @Enumerated(EnumType.STRING)

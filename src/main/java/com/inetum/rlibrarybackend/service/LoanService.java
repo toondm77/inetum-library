@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -50,10 +52,10 @@ public class LoanService {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("person").get("id"), personId.intValue()));
         }
         if (loanDateFrom != null) {
-            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("loanDate"), loanDateFrom));
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("loanDate"), loanDateFrom.atStartOfDay()));
         }
         if (loanDateTo != null) {
-            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("loanDate"), loanDateTo));
+            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("loanDate"), loanDateTo.atTime(java.time.LocalTime.MAX)));
         }
         Sort sortOrder = Sort.by(Sort.Direction.fromString(direction != null ? direction : "asc"), sort != null && !sort.isBlank() ? sort : "loanDate");
         Page<LoanDto> loans = loanRepository.findAll(spec, PageRequest.of(page, size, sortOrder)).map(this::mapEntityToDto);
@@ -79,8 +81,8 @@ public class LoanService {
         }
 
         Loan loan = new Loan();
-        loan.setLoanDate(dto.getLoanDate());
-        loan.setReturnDate(dto.getReturnDate());
+        loan.setLoanDate(dto.getLoanDate() != null ? dto.getLoanDate().toLocalDateTime() : null);
+        loan.setReturnDate(dto.getReturnDate() != null ? dto.getReturnDate().toLocalDateTime() : null);
         loan.setStatus(dto.getStatus() != null ? parseLoanStatus(dto.getStatus()) : LoanStatus.LOANED);
         loan.setPerson(person);
         loan.setLoanRule(loanRule);
@@ -109,8 +111,8 @@ public class LoanService {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "LoanRule not found"));
         }
 
-        existing.setLoanDate(dto.getLoanDate());
-        existing.setReturnDate(dto.getReturnDate());
+        existing.setLoanDate(dto.getLoanDate() != null ? dto.getLoanDate().toLocalDateTime() : null);
+        existing.setReturnDate(dto.getReturnDate() != null ? dto.getReturnDate().toLocalDateTime() : null);
         if (dto.getStatus() != null) {
             existing.setStatus(parseLoanStatus(dto.getStatus()));
         }
@@ -163,8 +165,8 @@ public class LoanService {
     private LoanDto mapEntityToDto(Loan loan) {
         LoanDto dto = new LoanDto();
         dto.setId(loan.getId() != null ? loan.getId().longValue() : null);
-        dto.setLoanDate(loan.getLoanDate());
-        dto.setReturnDate(loan.getReturnDate());
+        dto.setLoanDate(loan.getLoanDate() != null ? loan.getLoanDate().atOffset(ZoneOffset.UTC) : null);
+        dto.setReturnDate(loan.getReturnDate() != null ? loan.getReturnDate().atOffset(ZoneOffset.UTC) : null);
         dto.setStatus(loan.getStatus() != null ? loan.getStatus().name() : null);
         if (loan.getPerson() != null && loan.getPerson().getId() != null) {
             dto.setPersonId(loan.getPerson().getId().longValue());
