@@ -173,6 +173,7 @@ public class BookService {
         dto.setAgeCategory(book.getAgeCategory());
         dto.setPurchasePrice(book.getPurchasePrice());
         dto.setDuplicates(book.getDuplicates());
+        dto.setCoverImage(book.getCoverImage());
         dto.setAuthorName(book.getAuthor());
 
         if (book.getAuthors() != null && !book.getAuthors().isEmpty()) {
@@ -205,6 +206,7 @@ public class BookService {
         book.setAgeCategory(dto.getAgeCategory());
         book.setPurchasePrice(dto.getPurchasePrice() != null ? dto.getPurchasePrice() : 0.0);
         book.setDuplicates(dto.getDuplicates() != null ? dto.getDuplicates() : 0);
+        book.setCoverImage(dto.getCoverImage());
 
         book.setLibrary(library);
         book.setAuthor(author.getFirstName() + " " + author.getLastName());

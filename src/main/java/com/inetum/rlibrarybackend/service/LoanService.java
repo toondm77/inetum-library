@@ -6,6 +6,8 @@ import com.inetum.rlibrarybackend.model.Loan;
 import com.inetum.rlibrarybackend.model.LoanRule;
 import com.inetum.rlibrarybackend.model.LoanStatus;
 import com.inetum.rlibrarybackend.model.Person;
+import com.inetum.rlibrarybackend.model.AccountStatus;
+import com.inetum.rlibrarybackend.model.BookState;
 import com.inetum.rlibrarybackend.repository.BookRepository;
 import com.inetum.rlibrarybackend.repository.LoanRepository;
 import com.inetum.rlibrarybackend.repository.LoanRuleRepository;
@@ -17,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
@@ -72,7 +75,11 @@ public class LoanService {
         Person person = personRepository.findById(dto.getPersonId().intValue())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Person not found"));
 
+        validatePersonCanLoan(person);
         List<Book> books = resolveBooks(dto.getBookIds());
+        validateBooksAreAvailableForLoan(books);
+
+        books.forEach(book -> book.setBookState(BookState.BORROWED));
 
         LoanRule loanRule = null;
         if (dto.getLoanRuleId() != null) {
@@ -93,6 +100,14 @@ public class LoanService {
         return mapEntityToDto(saved);
     }
 
+    @Transactional(readOnly = true)
+    public Page<LoanDto> getLoansByBookId(Long bookId, int page, int size, String sort, String direction) {
+        log.debug("Fetching loans for bookId={} page={} size={} sort={} direction={}", bookId, page, size, sort, direction);
+        Sort sortOrder = Sort.by(Sort.Direction.fromString(direction != null ? direction : "desc"), sort != null && !sort.isBlank() ? sort : "loanDate");
+        return loanRepository.findByBooks_Id(bookId.intValue(), PageRequest.of(page, size, sortOrder))
+                .map(this::mapEntityToDto);
+    }
+
     public Optional<LoanDto> updateLoan(Long id, LoanDto dto) {
         Loan existing = loanRepository.findById(id.intValue()).orElse(null);
         if (existing == null) {
@@ -103,7 +118,22 @@ public class LoanService {
         Person person = personRepository.findById(dto.getPersonId().intValue())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Person not found"));
 
+        validatePersonCanLoan(person);
         List<Book> books = resolveBooks(dto.getBookIds());
+
+        LoanStatus requestedStatus = dto.getStatus() != null ? parseLoanStatus(dto.getStatus()) : existing.getStatus();
+        if (requestedStatus == LoanStatus.RETURNED) {
+            books.forEach(book -> {
+                BookState currentState = book.getBookState();
+                if (currentState == BookState.BORROWED || currentState == BookState.LOST) {
+                    book.setBookState(BookState.AVAILABLE);
+                }
+            });
+        } else {
+            validateBooksAreAvailableForLoan(books);
+            books.forEach(book -> book.setBookState(BookState.BORROWED));
+        }
+
 
         LoanRule loanRule = existing.getLoanRule();
         if (dto.getLoanRuleId() != null) {
@@ -112,9 +142,11 @@ public class LoanService {
         }
 
         existing.setLoanDate(dto.getLoanDate() != null ? dto.getLoanDate().toLocalDateTime() : null);
-        existing.setReturnDate(dto.getReturnDate() != null ? dto.getReturnDate().toLocalDateTime() : null);
+        existing.setReturnDate(dto.getReturnDate() != null
+                ? dto.getReturnDate().toLocalDateTime()
+                : (requestedStatus == LoanStatus.RETURNED ? LocalDateTime.now() : null));
         if (dto.getStatus() != null) {
-            existing.setStatus(parseLoanStatus(dto.getStatus()));
+            existing.setStatus(requestedStatus);
         }
         existing.setPerson(person);
         existing.setLoanRule(loanRule);
@@ -160,6 +192,25 @@ public class LoanService {
                 .map(bookId -> bookRepository.findById(bookId.intValue())
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Book not found: id=" + bookId)))
                 .collect(Collectors.toCollection(java.util.ArrayList::new));
+    }
+
+    private void validatePersonCanLoan(Person person) {
+        if (person.getAccountStatus() == AccountStatus.BANNED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "person account is banned and cannot loan books");
+        }
+    }
+
+    private void validateBooksAreAvailableForLoan(List<Book> books) {
+        List<String> unavailableBooks = books.stream()
+                .filter(book -> book.getBookState() != BookState.AVAILABLE)
+                .map(Book::getTitle)
+                .toList();
+
+        if (!unavailableBooks.isEmpty()) {
+            String message = "The following book(s) are not available for loan: ";
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, message + String.join(", ", unavailableBooks));
+        }
     }
 
     private LoanDto mapEntityToDto(Loan loan) {

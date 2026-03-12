@@ -50,6 +50,11 @@ public class Book {
     @Size(min = 10, max = 17)
     private String isbn;
 
+    @Enumerated(EnumType.STRING)
+    private BookState bookState;
+
+    private byte[] coverImage;
+
     @Min(1400)
     @Max(2100)
     private int publicationYear;
@@ -64,8 +69,6 @@ public class Book {
     @Enumerated(EnumType.STRING)
     private ThemeType theme;
 
-    @Enumerated(EnumType.STRING)
-    private BookState bookState;
 
     @Size(max = 50)
     private String ageCategory;

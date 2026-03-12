@@ -676,6 +676,53 @@ paths:
           description: Loan deleted
         '404':
           description: Loan not found
+  /loans/book/{bookId}:
+    get:
+      summary: Get all loans for a specific book
+      operationId: loansBookBookIdGet
+      tags:
+        - Loan
+      parameters:
+        - name: bookId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: size
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: loanDate
+          description: Field to sort by (id, loanDate, returnDate, status)
+        - in: query
+          name: direction
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort direction
+      responses:
+        '200':
+          description: List of loans for the book
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedLoanResponse'
+        '404':
+          description: Book not found
   /persons:
     get:
       summary: Get all persons
@@ -954,12 +1001,18 @@ components:
         duplicates:
           type: integer
           minimum: 0
+        coverImage:
+          type: string
+          format: byte
+          description: Base64 encoded cover image
     BookState:
       type: string
       enum:
         - AVAILABLE
         - TEMPORARILYUNAVAILABLE
         - PERMANENTLYUNAVAILABLE
+        - LOST
+        - BORROWED
     LoanDto:
       type: object
       required:
