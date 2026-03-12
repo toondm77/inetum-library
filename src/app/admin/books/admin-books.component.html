@@ -41,29 +41,29 @@
       <table class="w-full text-left border-collapse whitespace-nowrap">
         <thead class="bg-white">
           <tr class="border-b border-gray-100 text-base">
-            <th class="py-5 px-6 font-bold text-gray-800 w-20 text-base">Cover</th>
-            <th class="py-5 px-6 font-bold text-gray-800 w-40 text-base">ISBN</th>
-            <th class="py-5 px-6 font-bold text-gray-800 w-64 text-base">Titel</th>
-            <th class="py-5 px-6 font-bold text-gray-800 text-base">Auteur(s)</th>
-            <th class="py-5 px-6 font-bold text-gray-800 text-base">
+            <th class="py-3 px-3 md:py-5 md:px-6 font-bold text-gray-800 w-20 text-base">Cover</th>
+            <th class="hidden md:table-cell py-5 px-6 font-bold text-gray-800 w-40 text-base">ISBN</th>
+            <th class="py-3 px-3 md:py-5 md:px-6 font-bold text-gray-800 w-64 text-base">Titel</th>
+            <th class="hidden md:table-cell py-5 px-6 font-bold text-gray-800 text-base">Auteur(s)</th>
+            <th class="hidden md:table-cell py-5 px-6 font-bold text-gray-800 text-base">
               <button type="button" class="inline-flex items-center gap-2 hover:text-teal-600" (click)="sortByGenre()" [attr.aria-label]="sortLabel('genre')">
                 Genre(s)
                 <span class="text-[11px] text-gray-400">↕</span>
               </button>
             </th>
-            <th class="py-5 px-6 font-bold text-gray-800 text-base">
+            <th class="py-3 px-3 md:py-5 md:px-6 font-bold text-gray-800 text-base">
               <button type="button" class="inline-flex items-center gap-2 hover:text-teal-600" (click)="sortByStatus()" [attr.aria-label]="sortLabel('status')">
                 Status
                 <span class="text-[11px] text-gray-400">↕</span>
               </button>
             </th>
-            <th class="py-5 px-6 font-bold text-gray-800 text-base">
+            <th class="hidden md:table-cell py-5 px-6 font-bold text-gray-800 text-base">
               <button type="button" class="inline-flex items-center gap-2 hover:text-teal-600" (click)="sortByPrice()" [attr.aria-label]="sortLabel('price')">
                 aankoop prijs
                 <span class="text-[11px] text-gray-400">↕</span>
               </button>
             </th>
-            <th class="py-5 px-6 font-bold text-gray-800 text-right text-base">Acties</th>
+            <th class="py-3 px-3 md:py-5 md:px-6 font-bold text-gray-800 text-right text-base">Acties</th>
           </tr>
         </thead>
         <tbody>
@@ -75,7 +75,7 @@
               role="button"
               (keydown.enter)="openBookDetails(book.id, false)"
             >
-              <td class="py-5 px-6 pt-4 pb-4">
+              <td class="py-3 px-3 md:py-5 md:px-6">
                  <div class="h-25 w-18 overflow-hidden rounded shadow-sm bg-slate-100 flex-shrink-0" style="image-rendering: crisp-edges;">
                     @if (book.coverImage && book.coverImage !== 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==') {
                       <img [src]="'data:image/jpeg;base64,' + book.coverImage" class="h-full w-full object-cover" [alt]="book.title" />
@@ -84,19 +84,19 @@
                     }
                  </div>
               </td>
-              <td class="py-5 px-6 text-base font-medium text-gray-500">{{ book.isbn }}</td>
-              <td class="py-5 px-6 text-base text-gray-800 font-medium max-w-[250px] truncate" [title]="book.title">
+              <td class="hidden md:table-cell py-5 px-6 text-base font-medium text-gray-500">{{ book.isbn }}</td>
+              <td class="py-3 px-3 md:py-5 md:px-6 text-base text-gray-800 font-medium max-w-[250px] truncate" [title]="book.title">
                 <a [routerLink]="['/admin/books', book.id]" class="hover:text-blue-600 hover:underline cursor-pointer">
                   {{ book.title }}
                 </a>
               </td>
-              <td class="py-5 px-6 text-base font-medium text-gray-800 truncate max-w-[150px]" [title]="book.authorName">{{ book.authorName }}</td>
-              <td class="py-5 px-6 text-base font-medium text-gray-600">{{ book.theme | lowercase }}</td>
-              <td class="py-5 px-6 text-base">
+              <td class="hidden md:table-cell py-5 px-6 text-base font-medium text-gray-800 truncate max-w-[150px]" [title]="book.authorName">{{ book.authorName }}</td>
+              <td class="hidden md:table-cell py-5 px-6 text-base font-medium text-gray-600">{{ book.theme | lowercase }}</td>
+              <td class="py-3 px-3 md:py-5 md:px-6 text-base">
                  <span [class]="bookStateColor(book.bookState)">{{ bookStateLabel(book.bookState) }}</span>
               </td>
-              <td class="py-5 px-6 text-base font-medium text-gray-800">€{{ (book.purchasePrice ?? 0).toFixed(2) }}</td>
-              <td class="py-5 px-6 text-right text-base">
+              <td class="hidden md:table-cell py-5 px-6 text-base font-medium text-gray-800">€{{ (book.purchasePrice ?? 0).toFixed(2) }}</td>
+              <td class="py-3 px-3 md:py-5 md:px-6 text-right text-base">
                 <div class="flex items-center justify-end gap-4 text-gray-400">
                   <button class="hover:text-indigo-500 transition-colors" title="Bewerken" aria-label="Bewerken" (click)="$event.stopPropagation(); openBookDetails(book.id, true)">
                     <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
