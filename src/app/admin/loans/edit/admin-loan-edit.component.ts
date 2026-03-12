@@ -8,6 +8,7 @@ import { Loan } from '../../../models/Loan';
 import { Person } from '../../../models/Person';
 import { Page } from '../../../models/Page';
 import { Book } from '../../../models/Book';
+import { formatForDateTimeLocalInput, toIsoDateTime } from '../../../utils/date';
 
 @Component({
   selector: 'app-admin-loan-edit',
@@ -102,14 +103,9 @@ export class AdminLoanEditComponent implements OnInit {
   private loadLoan(id: number): void {
     this.http.get<Loan>(`${this.apiBase}/loans/${id}`).subscribe({
       next: (loan) => {
-        const formatForInput = (d: string | null) => {
-          if (!d) return '';
-          return d.split('T')[0];
-        };
-
         this.loanForm.patchValue({
-          loanDate: formatForInput(loan.loanDate),
-          returnDate: formatForInput(loan.returnDate),
+          loanDate: formatForDateTimeLocalInput(loan.loanDate),
+          returnDate: formatForDateTimeLocalInput(loan.returnDate),
           status: loan.status ?? 'LOANED',
           personId: loan.personId,
           loanRuleId: loan.loanRuleId ?? null,
@@ -166,8 +162,8 @@ export class AdminLoanEditComponent implements OnInit {
     const values = this.loanForm.getRawValue();
     const payload = {
       ...values,
-      loanDate: values.loanDate ? new Date(values.loanDate).toISOString() : null,
-      returnDate: values.returnDate ? new Date(values.returnDate).toISOString() : null,
+      loanDate: toIsoDateTime(values.loanDate),
+      returnDate: toIsoDateTime(values.returnDate),
       loanRuleId: values.loanRuleId || null
     };
 

@@ -57,8 +57,8 @@
                 <td class="hidden sm:table-cell py-3 sm:py-5 px-3 sm:px-6 text-[14px] sm:text-[15px] font-medium text-gray-800 whitespace-nowrap">#{{ loan.id }}</td>
                 <td class="py-3 sm:py-5 px-3 sm:px-6 text-[14px] sm:text-[15px] text-gray-700 whitespace-nowrap">
                   <div class="flex flex-col">
+                    <span class="md:hidden mb-1 max-w-[140px] truncate text-sm font-semibold text-slate-900" title="{{ personLabel(loan) }}">{{ personLabel(loan) }}</span>
                     <span>{{ formatDate(loan.loanDate) }}</span>
-                    <span class="md:hidden text-[10px] text-gray-500 mt-1 max-w-[100px] truncate" title="{{ personLabel(loan) }}">{{ personLabel(loan) }}</span>
                   </div>
                 </td>
                 <td class="hidden md:table-cell py-3 sm:py-5 px-3 sm:px-6 text-[14px] sm:text-[15px] text-gray-700 whitespace-nowrap">{{ formatDate(loan.returnDate) }}</td>
@@ -68,19 +68,23 @@
                   </span>
                 </td>
                 <td class="hidden md:table-cell py-3 sm:py-5 px-3 sm:px-6 text-[14px] sm:text-[15px] text-gray-800 whitespace-nowrap">
-                  <a [routerLink]="['/admin/users', loan.personId]" class="font-medium text-emerald-700 hover:text-emerald-800 hover:underline">
+                  <a [routerLink]="['/admin/users', loan.personId]" class="font-medium text-slate-900 hover:text-slate-700 hover:underline">
                     {{ personLabel(loan) }}
                   </a>
                 </td>
-                <td class="hidden sm:table-cell py-3 sm:py-5 px-3 sm:px-6 w-full text-[14px] sm:text-[15px] text-gray-700 min-w-[120px] sm:min-w-[150px]">
+                <td class="hidden sm:table-cell py-3 sm:py-5 px-3 sm:px-6 text-[14px] sm:text-[15px] text-gray-700 max-w-xs">
                   @if (loan.bookIds.length > 0) {
                     <div class="flex flex-col sm:flex-row flex-wrap gap-1 sm:gap-2">
                       @for (bookId of loan.bookIds; track bookId) {
                         <a
                           [routerLink]="['/books', bookId]"
-                          class="inline-flex items-center justify-center sm:justify-start w-fit rounded-full border border-emerald-200 bg-emerald-50 px-2 sm:px-3 py-0.5 sm:py-1 text-[11px] sm:text-xs font-semibold text-emerald-700 hover:bg-emerald-100 whitespace-nowrap"
+                          class="inline-flex items-center justify-center sm:justify-start w-fit rounded-lg border border-slate-200 bg-white p-1 hover:bg-slate-50 transition-colors"
                         >
-                          {{ bookTitle(bookId) }}
+                          <img
+                            [src]="bookCoverImage(bookId) && bookCoverImage(bookId) !== 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==' ? 'data:image/jpeg;base64,' + bookCoverImage(bookId) : 'commingsoon.png'"
+                            alt="Boekcover"
+                            class="h-12 w-8 object-cover rounded shadow-sm"
+                          />
                         </a>
                       }
                     </div>

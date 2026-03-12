@@ -60,15 +60,19 @@
                     {{ statusLabel(loan.status) }}
                   </span>
                 </td>
-                <td class="hidden sm:table-cell py-3 sm:py-5 px-3 sm:px-6 w-full text-[14px] sm:text-[15px] text-gray-700 min-w-[120px] sm:min-w-[150px]">
+                <td class="hidden sm:table-cell py-3 sm:py-5 px-3 sm:px-6 text-[14px] sm:text-[15px] text-gray-700 max-w-xs">
                   @if (loan.bookIds.length > 0) {
                     <div class="flex flex-col sm:flex-row flex-wrap gap-1 sm:gap-2">
                       @for (bookId of loan.bookIds; track bookId) {
                         <a
                           [routerLink]="['/books', bookId]"
-                          class="inline-flex items-center justify-center sm:justify-start w-fit rounded-full border border-emerald-200 bg-emerald-50 px-2 sm:px-3 py-0.5 sm:py-1 text-[11px] sm:text-xs font-semibold text-emerald-700 hover:bg-emerald-100 whitespace-nowrap"
+                          class="inline-flex items-center justify-center sm:justify-start w-fit rounded-lg border border-slate-200 bg-white p-1 hover:bg-slate-50 transition-colors"
                         >
-                          {{ bookTitle(bookId) }}
+                          <img
+                            [src]="bookCoverImage(bookId) && bookCoverImage(bookId) !== 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==' ? 'data:image/jpeg;base64,' + bookCoverImage(bookId) : 'commingsoon.png'"
+                            alt="Boekcover"
+                            class="h-12 w-8 object-cover rounded shadow-sm"
+                          />
                         </a>
                       }
                     </div>

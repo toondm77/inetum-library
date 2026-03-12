@@ -8,6 +8,7 @@ import { environment } from '../../../../environments/environment';
 import { Book } from '../../../models/Book';
 import { Page } from '../../../models/Page';
 import { PersonService } from '../../../services/person.service';
+import { toIsoDateTime } from '../../../utils/date';
 
 @Component({
   selector: 'app-admin-loan-create',
@@ -125,10 +126,8 @@ export class AdminLoanCreateComponent {
     this.error.set(null);
 
     const bookIds = this.cart().map(b => b.id);
-    const today = new Date();
-
     const payload = {
-      loanDate: new Date(today.toISOString().split('T')[0]),
+      loanDate: toIsoDateTime(new Date().toISOString()),
       returnDate: null,
       status: "LOANED", 
       personId: currentPerson.id,

@@ -5,13 +5,18 @@ import { RouterLink } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { Loan } from '../../models/Loan';
 import { Page } from '../../models/Page';
+import { formatLoanDateTime } from '../../utils/date';
 import { getLoanStatusLabel, getLoanStatusColor } from '../../utils/status';
 
 import { AdminLoanCreateComponent } from './create/admin-loan-create.component';
 
-interface BookSummary {
+interface BookCoverResponse {
+  coverImage?: string;
+}
+
+interface BookCover {
   id: number;
-  title: string;
+  coverImage?: string;
 }
 
 @Component({
@@ -33,7 +38,8 @@ export class AdminLoansComponent {
   protected readonly currentPage = signal(0);
   protected readonly totalPages = signal(0);
   protected readonly pageSize = signal(20);
-  protected readonly bookTitlesById = signal<Record<number, string>>({});
+  protected readonly bookCovers = signal<BookCover[]>([]);
+  public readonly formatDate = formatLoanDateTime;
 
   protected readonly loanToDelete = signal<Loan | null>(null);
   protected readonly isDeleting = signal(false);
@@ -56,14 +62,14 @@ export class AdminLoansComponent {
       next: (response) => {
         const loadedLoans = response.items ?? [];
         this.loans.set(loadedLoans);
-        this.loadBookTitlesForLoans(loadedLoans);
+        this.loadBookCoversForLoans(loadedLoans);
         this.totalElements.set(response.totalElements ?? 0);
         this.totalPages.set(response.totalPages ?? 0);
         this.apiLoading.set(false);
       },
       error: () => {
         this.loans.set([]);
-        this.bookTitlesById.set({});
+        this.bookCovers.set([]);
         this.totalElements.set(0);
         this.totalPages.set(0);
         this.apiError.set('Kon recente uitleningen niet laden.');
@@ -88,23 +94,6 @@ export class AdminLoansComponent {
 
     this.currentPage.update((page) => page + 1);
     this.loadRecentLoans();
-  }
-
-  protected formatDate(value: string | null): string {
-    if (!value) {
-      return '-';
-    }
-
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) {
-      return value;
-    }
-
-    return parsed.toLocaleDateString('nl-BE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
   }
 
   protected confirmDelete(loan: Loan): void {
@@ -148,11 +137,11 @@ export class AdminLoansComponent {
     return `Persoon #${loan.personId}`;
   }
 
-  protected bookTitle(bookId: number): string {
-    return this.bookTitlesById()[bookId] ?? `Boek #${bookId}`;
+  protected bookCoverImage(bookId: number): string | undefined {
+    return this.bookCovers().find((book) => book.id === bookId)?.coverImage;
   }
 
-  private loadBookTitlesForLoans(loans: Loan[]): void {
+  private loadBookCoversForLoans(loans: Loan[]): void {
     const uniqueBookIds: number[] = [];
 
     for (const loan of loans) {
@@ -164,26 +153,26 @@ export class AdminLoansComponent {
     }
 
     if (uniqueBookIds.length === 0) {
-      this.bookTitlesById.set({});
+      this.bookCovers.set([]);
       return;
     }
 
-    const titleMap: Record<number, string> = {};
+    const bookCovers: BookCover[] = [];
     let finishedCount = 0;
 
     for (const bookId of uniqueBookIds) {
-      this.http.get<BookSummary>(`${this.apiBase}/books/${bookId}`).subscribe({
+      this.http.get<BookCoverResponse>(`${this.apiBase}/books/${bookId}`).subscribe({
         next: (book) => {
-          titleMap[bookId] = book.title || `Boek #${bookId}`;
+          bookCovers.push({ id: bookId, coverImage: book.coverImage });
         },
         error: () => {
-          titleMap[bookId] = `Boek #${bookId}`;
+          bookCovers.push({ id: bookId });
         },
         complete: () => {
           finishedCount += 1;
 
           if (finishedCount === uniqueBookIds.length) {
-            this.bookTitlesById.set(titleMap);
+            this.bookCovers.set(bookCovers);
           }
         },
       });

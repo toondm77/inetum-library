@@ -95,7 +95,7 @@
               <td class="py-5 px-6 text-base">
                  <span [class]="bookStateColor(book.bookState)">{{ bookStateLabel(book.bookState) }}</span>
               </td>
-              <td class="py-5 px-6 text-base font-medium text-gray-800">€{{ book.purchasePrice?.toFixed(2) || '0.00' }}</td>
+              <td class="py-5 px-6 text-base font-medium text-gray-800">€{{ (book.purchasePrice ?? 0).toFixed(2) }}</td>
               <td class="py-5 px-6 text-right text-base">
                 <div class="flex items-center justify-end gap-4 text-gray-400">
                   <button class="hover:text-indigo-500 transition-colors" title="Bewerken" aria-label="Bewerken" (click)="$event.stopPropagation(); openBookDetails(book.id, true)">

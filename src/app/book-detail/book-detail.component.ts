@@ -55,6 +55,8 @@ export class BookDetailComponent {
   protected readonly optionsLoading = signal(false);
   protected readonly authors = signal<AuthorOption[]>([]);
   protected readonly libraries = signal<LibraryOption[]>([]);
+  private readonly authorsLoaded = signal(false);
+  private readonly librariesLoaded = signal(false);
   protected readonly canSave = computed(() => this.isEditMode() && this.editForm.valid && !this.isSaving());
 
   protected readonly editForm = this.formBuilder.nonNullable.group({
@@ -75,17 +77,23 @@ export class BookDetailComponent {
   });
 
   constructor() {
-    this.loadEditOptions();
-
     this.subscriptions.push(
       this.roleService.isAdmin$.subscribe((isAdmin) => {
         this.isAdmin.set(isAdmin);
+        if (isAdmin && this.editRequested()) {
+          this.loadEditOptionsIfNeeded();
+        }
       })
     );
 
     this.subscriptions.push(
       this.route.queryParamMap.subscribe((params) => {
-        this.editRequested.set(params.get('edit') === '1');
+        const editRequested = params.get('edit') === '1';
+        this.editRequested.set(editRequested);
+
+        if (editRequested && this.isAdmin()) {
+          this.loadEditOptionsIfNeeded();
+        }
       })
     );
 
@@ -277,50 +285,79 @@ export class BookDetailComponent {
     });
   }
 
-  private loadEditOptions(): void {
+  private loadEditOptionsIfNeeded(): void {
+    if (this.optionsLoading()) {
+      return;
+    }
+
+    const shouldLoadAuthors = !this.authorsLoaded();
+    const shouldLoadLibraries = !this.librariesLoaded();
+
+    if (!shouldLoadAuthors && !shouldLoadLibraries) {
+      return;
+    }
+
+    let pendingRequests = 0;
+    const finishRequest = () => {
+      pendingRequests -= 1;
+      if (pendingRequests === 0) {
+        this.optionsLoading.set(false);
+      }
+    };
+
     this.optionsLoading.set(true);
 
-    this.subscriptions.push(
-      this.http
-        .get<PagedResponse<AuthorOption>>(`${this.apiBase}/authors`, {
-          params: {
-            page: 0,
-            size: 200,
-            sort: 'lastName',
-            direction: 'asc',
-          },
-        })
-        .subscribe({
-          next: (response) => {
-            this.authors.set(response.items ?? []);
-            this.optionsLoading.set(false);
-          },
-          error: () => {
-            this.authors.set([]);
-            this.optionsLoading.set(false);
-          },
-        })
-    );
+    if (shouldLoadAuthors) {
+      pendingRequests += 1;
+      this.subscriptions.push(
+        this.http
+          .get<PagedResponse<AuthorOption>>(`${this.apiBase}/authors`, {
+            params: {
+              page: 0,
+              size: 200,
+              sort: 'lastName',
+              direction: 'asc',
+            },
+          })
+          .subscribe({
+            next: (response) => {
+              this.authors.set(response.items ?? []);
+              this.authorsLoaded.set(true);
+              finishRequest();
+            },
+            error: () => {
+              this.authors.set([]);
+              finishRequest();
+            },
+          })
+      );
+    }
 
-    this.subscriptions.push(
-      this.http
-        .get<PagedResponse<LibraryOption>>(`${this.apiBase}/libraries`, {
-          params: {
-            page: 0,
-            size: 200,
-            sort: 'name',
-            direction: 'asc',
-          },
-        })
-        .subscribe({
-          next: (response) => {
-            this.libraries.set(response.items ?? []);
-          },
-          error: () => {
-            this.libraries.set([]);
-          },
-        })
-    );
+    if (shouldLoadLibraries) {
+      pendingRequests += 1;
+      this.subscriptions.push(
+        this.http
+          .get<PagedResponse<LibraryOption>>(`${this.apiBase}/libraries`, {
+            params: {
+              page: 0,
+              size: 200,
+              sort: 'name',
+              direction: 'asc',
+            },
+          })
+          .subscribe({
+            next: (response) => {
+              this.libraries.set(response.items ?? []);
+              this.librariesLoaded.set(true);
+              finishRequest();
+            },
+            error: () => {
+              this.libraries.set([]);
+              finishRequest();
+            },
+          })
+      );
+    }
   }
 
   protected authorLabel(author: AuthorOption): string {
