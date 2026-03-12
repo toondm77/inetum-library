@@ -62,6 +62,26 @@ public class LoanController implements LoansApi {
     }
 
     @Override
+    @PreAuthorize("hasRole('VERANTWOORDELIJKE')")
+    public ResponseEntity<PagedLoanResponse> loansBookBookIdGet(Long bookId, Integer page, Integer size, String sort, String direction) {
+        int p = page != null ? page : 0;
+        int s = size != null ? size : 20;
+        String sortField = (sort != null && !sort.isBlank()) ? sort : "loanDate";
+        String dir = (direction != null && !direction.isBlank()) ? direction : "desc";
+        log.info("GET /loans/book/{} requested page={} size={} sort={} direction={}", bookId, p, s, sortField, dir);
+
+        Page<LoanDto> loansPage = loanService.getLoansByBookId(bookId, p, s, sortField, dir);
+        PagedLoanResponse response = new PagedLoanResponse(
+                loansPage.getNumber(),
+                loansPage.getSize(),
+                loansPage.getTotalElements(),
+                loansPage.getTotalPages(),
+                loansPage.getContent()
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
     @PreAuthorize("hasAnyRole('WERKNEMER', 'VERANTWOORDELIJKE')")
     public ResponseEntity<LoanDto> loansIdGet(Long id) {
         log.info("GET /loans/{} requested", id);
