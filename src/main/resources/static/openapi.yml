@@ -7,7 +7,13 @@ security:
   - auth0_jwt: []
 servers:
   - url: /api
+    description: Default URL (Relative)
   - url: http://localhost:8080/api
+    description: Local Environment
+  - url: https://libraryinetum-byepfre6f4ekc3fn.westeurope-01.azurewebsites.net/api
+    description: Staging Environment
+  - url: https://productiebackend-h3dffkbxgzc5bkgd.westeurope-01.azurewebsites.net/api
+    description: Production Environment
 paths:
   /theme-types:
     get:
