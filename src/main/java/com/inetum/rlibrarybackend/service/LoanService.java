@@ -122,6 +122,7 @@ public class LoanService {
         List<Book> books = resolveBooks(dto.getBookIds());
 
         LoanStatus requestedStatus = dto.getStatus() != null ? parseLoanStatus(dto.getStatus()) : existing.getStatus();
+
         if (requestedStatus == LoanStatus.RETURNED) {
             books.forEach(book -> {
                 BookState currentState = book.getBookState();
@@ -129,11 +130,7 @@ public class LoanService {
                     book.setBookState(BookState.AVAILABLE);
                 }
             });
-        } else {
-            validateBooksAreAvailableForLoan(books);
-            books.forEach(book -> book.setBookState(BookState.BORROWED));
         }
-
 
         LoanRule loanRule = existing.getLoanRule();
         if (dto.getLoanRuleId() != null) {
