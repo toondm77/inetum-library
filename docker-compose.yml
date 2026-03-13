@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: rlibrary-postgres
+    environment:
+      POSTGRES_DB: rlibrary
+      POSTGRES_USER: rlibrary
+      POSTGRES_PASSWORD: rlibrary
+    ports:
+      - "5432:5432"
+    volumes:
+      - rlibrary-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U rlibrary -d rlibrary" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  rlibrary-pgdata:
+
+

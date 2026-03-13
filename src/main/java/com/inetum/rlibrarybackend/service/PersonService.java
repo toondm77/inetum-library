@@ -1,0 +1,234 @@
+package com.inetum.rlibrarybackend.service;
+
+import com.inetum.rlibrarybackend.dto.Gender;
+import com.inetum.rlibrarybackend.dto.PersonDto;
+import com.inetum.rlibrarybackend.dto.UserRole;
+import com.inetum.rlibrarybackend.model.*;
+import com.inetum.rlibrarybackend.repository.LibraryRepository;
+import com.inetum.rlibrarybackend.repository.PersonRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Optional;
+
+@Service
+@Slf4j
+public class PersonService {
+    private final PersonRepository personRepository;
+    private final LibraryRepository libraryRepository;
+
+    public PersonService(PersonRepository personRepository, LibraryRepository libraryRepository) {
+        this.personRepository = personRepository;
+        this.libraryRepository = libraryRepository;
+    }
+
+    public Page<PersonDto> getAllPersons(int page, int size, String sort, String direction, String lastName, String accountStatus) {
+        log.debug("Fetching all persons page={} size={} sort={} direction={} lastName={} accountStatus={}", page, size, sort, direction, lastName, accountStatus);
+        Specification<Person> spec = Specification.where(null);
+        if (lastName != null && !lastName.isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("lastName")), "%%" + lastName.toLowerCase() + "%%"));
+        }
+        if (accountStatus != null && !accountStatus.isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.equal(cb.lower(root.get("accountStatus")), accountStatus.toLowerCase()));
+        }
+        Sort sortOrder = Sort.by(Sort.Direction.fromString(direction != null ? direction : "asc"), sort != null && !sort.isBlank() ? sort : "lastName");
+        return personRepository.findAll(spec, PageRequest.of(page, size, sortOrder))
+                .map(this::mapEntityToDto);
+    }
+
+    public Optional<PersonDto> findPersonById(Long id) {
+        log.debug("Finding person id={}", id);
+        return personRepository.findById(id.intValue()).map(this::mapEntityToDto);
+    }
+
+    public Optional<PersonDto> findPersonByAuth0Id(String auth0Id) {
+        log.debug("Finding person auth0Id={}", auth0Id);
+        return personRepository.findByAuth0Id(auth0Id).map(this::mapEntityToDto);
+    }
+
+    public PersonDto createPerson(PersonDto dto) {
+        // Validate birthdate must be before today
+        if (dto.getBirthDate() != null && !dto.getBirthDate().isBefore(LocalDate.now())) {
+            log.warn("Create person failed: birthDate must be before today");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Birth date must be before today");
+        }
+
+        // Validate library exists if provided
+        Library activeLibrary = null;
+        if (dto.getActiveLibraryId() != null) {
+            log.debug("Validating active library id={}", dto.getActiveLibraryId());
+            activeLibrary = libraryRepository.findById(dto.getActiveLibraryId().intValue())
+                    .orElseThrow(() -> {
+                        log.warn("Create person failed: library id={} not found", dto.getActiveLibraryId());
+                        return new ResponseStatusException(HttpStatus.NOT_FOUND, "Library not found");
+                    });
+        }
+
+        Person toSave = mapDtoToEntity(dto);
+        toSave.setActiveLibrary(activeLibrary);
+        Person saved = personRepository.save(toSave);
+        log.info("Created person id={}", saved.getId());
+        return mapEntityToDto(saved);
+    }
+
+    public boolean deletePerson(Long id) {
+        Integer entityId = id.intValue();
+        if (!personRepository.existsById(entityId)) {
+            log.warn("Person id={} not found for delete", id);
+            return false;
+        }
+        personRepository.deleteById(entityId);
+        log.info("Deleted person id={}", id);
+        return true;
+    }
+
+    public Optional<PersonDto> updatePerson(Long id, PersonDto dto) {
+        Person existing = personRepository.findById(id.intValue()).orElse(null);
+        if (existing == null) {
+            log.warn("Update person failed: id={} not found", id);
+            return Optional.empty();
+        }
+
+        // nooit auth0 aanpassen
+        if (dto.getAuth0Id() != null && !dto.getAuth0Id().equals(existing.getAuth0Id())) {
+            log.warn("Update person id={} failed: attempt to change auth0Id rejected", id);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "auth0Id cannot be changed");
+        }
+
+        if (dto.getBirthDate() != null && !dto.getBirthDate().isBefore(LocalDate.now())) {
+            log.warn("Update person id={} failed: birthDate must be before today", id);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Birth date must be before today");
+        }
+
+        Library activeLibrary = existing.getActiveLibrary();
+        if (dto.getActiveLibraryId() != null) {
+            activeLibrary = libraryRepository.findById(dto.getActiveLibraryId().intValue())
+                    .orElseThrow(() -> {
+                        log.warn("Update person id={} failed: library id={} not found", id, dto.getActiveLibraryId());
+                        return new ResponseStatusException(HttpStatus.NOT_FOUND, "Library not found");
+                    });
+        }
+
+        existing.setFirstName(dto.getFirstName());
+        existing.setLastName(dto.getLastName());
+        if (dto.getBirthDate() != null) {
+            existing.setBirthDate(dto.getBirthDate());
+        }
+        existing.setFunction(dto.getFunctie());
+        existing.setBadgeCode(dto.getBadgeCode());
+        if (dto.getUserRole() != null) {
+            try {
+                existing.setUserRole(com.inetum.rlibrarybackend.model.UserRole.valueOf(dto.getUserRole().name()));
+            } catch (IllegalArgumentException ignored) {}
+        }
+        if (dto.getGender() != null) {
+            try {
+                existing.setGender(com.inetum.rlibrarybackend.model.Gender.valueOf(dto.getGender().name()));
+            } catch (IllegalArgumentException ignored) {}
+        }
+        existing.setCountry(dto.getCountry());
+        existing.setPhoneNumber(dto.getPhoneNumber());
+        existing.setPreferredLanguage(dto.getPreferredLanguage());
+        existing.setProfilePictureUrl(dto.getProfilePictureUrl());
+        existing.setActiveLibrary(activeLibrary);
+        if (dto.getAccountStatus() != null) {
+            try {
+                existing.setAccountStatus(AccountStatus.valueOf(dto.getAccountStatus().toUpperCase()));
+            } catch (IllegalArgumentException ignored) {}
+        }
+
+        Person saved = personRepository.save(existing);
+        log.info("Updated person id={}", id);
+        return Optional.of(mapEntityToDto(saved));
+    }
+
+    private PersonDto mapEntityToDto(Person person) {
+        PersonDto dto = new PersonDto();
+        dto.setId(person.getId() != null ? person.getId().longValue() : null);
+        dto.setFirstName(person.getFirstName());
+        dto.setLastName(person.getLastName());
+        dto.setBirthDate(person.getBirthDate());
+        dto.setFunctie(person.getFunction());
+        dto.setBadgeCode(person.getBadgeCode());
+        dto.setAuth0Id(person.getAuth0Id());
+        dto.setUserRole(person.getUserRole() != null ? UserRole.valueOf(person.getUserRole().name()) : null);
+        dto.setGender(person.getGender() != null ? Gender.valueOf(person.getGender().name()) : null);
+        dto.setCountry(person.getCountry());
+        dto.setPhoneNumber(person.getPhoneNumber());
+        dto.setPreferredLanguage(person.getPreferredLanguage());
+        dto.setProfilePictureUrl(person.getProfilePictureUrl());
+        if (person.getActiveLibrary() != null && person.getActiveLibrary().getId() != null) {
+            dto.setActiveLibraryId(person.getActiveLibrary().getId().longValue());
+        }
+        dto.setAccountStatus(person.getAccountStatus() != null ? person.getAccountStatus().name() : null);
+        if (person.getPersonalStats() != null && person.getPersonalStats().getId() != null) {
+            dto.setPersonalStatsId(person.getPersonalStats().getId().longValue());
+        }
+        if (person.getLoans() != null) {
+            dto.setLoanIds(person.getLoans().stream()
+                    .filter(loan -> loan.getId() != null)
+                    .map(loan -> loan.getId().longValue())
+                    .toList());
+        }
+        if (person.getNotifications() != null) {
+            dto.setNotificationIds(person.getNotifications().stream()
+                    .filter(n -> n.getId() != null)
+                    .map(n -> n.getId().longValue())
+                    .toList());
+        }
+        if (person.getBookComplaints() != null) {
+            dto.setBookComplaintIds(person.getBookComplaints().stream()
+                    .filter(complaint -> complaint.getId() != null)
+                    .map(complaint -> complaint.getId().longValue())
+                    .toList());
+        }
+        return dto;
+    }
+
+    private Person mapDtoToEntity(PersonDto dto) {
+        Person person = new Person();
+        person.setFirstName(dto.getFirstName());
+        person.setLastName(dto.getLastName());
+        person.setBirthDate(dto.getBirthDate());
+        person.setFunction(dto.getFunctie());
+        person.setBadgeCode(dto.getBadgeCode());
+        if (dto.getAuth0Id() != null) {
+            person.setAuth0Id(dto.getAuth0Id());
+        }
+        if (dto.getUserRole() != null) {
+            try {
+                person.setUserRole(com.inetum.rlibrarybackend.model.UserRole.valueOf(dto.getUserRole().name()));
+            } catch (IllegalArgumentException ignored) {}
+        }
+        if (dto.getGender() != null) {
+            try {
+                person.setGender(com.inetum.rlibrarybackend.model.Gender.valueOf(dto.getGender().name()));
+            } catch (IllegalArgumentException ignored) {}
+        }
+        person.setCountry(dto.getCountry());
+        person.setPhoneNumber(dto.getPhoneNumber());
+        person.setPreferredLanguage(dto.getPreferredLanguage());
+        person.setProfilePictureUrl(dto.getProfilePictureUrl());
+        if (dto.getAccountStatus() != null) {
+            try {
+                person.setAccountStatus(AccountStatus.valueOf(dto.getAccountStatus().toUpperCase()));
+            } catch (IllegalArgumentException ex) {
+                person.setAccountStatus(AccountStatus.ACTIVE);
+            }
+        } else {
+            person.setAccountStatus(AccountStatus.ACTIVE);
+        }
+        person.setLoans(new ArrayList<>());
+        person.setNotifications(new ArrayList<>());
+        person.setBookComplaints(new ArrayList<>());
+        return person;
+    }
+}
