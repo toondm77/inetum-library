@@ -190,6 +190,13 @@
         }
       </div>
 
+      <div class="md:col-span-2">
+        <label class="mb-1 block text-sm font-medium text-slate-700">Afbeelding (Cover Image)</label>
+        <div class="mt-1 flex items-center gap-4">
+          <input type="file" accept="image/*" (change)="onFileSelected($event)" class="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100" />
+        </div>
+      </div>
+
       @if (releaseYearMismatch()) {
         <div class="md:col-span-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           Publicatiejaar moet overeenkomen met het jaar uit de release datum.

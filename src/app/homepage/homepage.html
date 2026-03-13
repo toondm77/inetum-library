@@ -22,19 +22,28 @@
               @for (suggestion of suggestions(); track suggestion.id) {
                 <button
                   type="button"
-                  class="block w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                  class="flex items-center gap-3 w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 transition"
                   (mousedown)="$event.preventDefault(); selectSuggestion(suggestion)"
                 >
-                  {{ suggestion.title }}
+                  <div class="h-10 w-7 flex-shrink-0 overflow-hidden rounded bg-slate-100 shadow-sm" style="image-rendering: crisp-edges;">
+                    @if (suggestion.coverImage && suggestion.coverImage !== 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==') {
+                      <img [src]="'data:image/jpeg;base64,' + suggestion.coverImage" class="h-full w-full object-cover" [alt]="suggestion.title" />
+                    } @else {
+                      <img src="commingsoon.png" class="h-full w-full object-cover" alt="Geen afbeelding" />
+                    }
+                  </div>
+                  <div class="flex flex-col overflow-hidden">
+                    <span class="truncate font-medium">{{ suggestion.title }}</span>
+                    @if(suggestion.authorName) {
+                      <span class="truncate text-xs text-slate-500">{{ suggestion.authorName }}</span>
+                    }
+                  </div>
                 </button>
               }
             </div>
           }
         </div>
-
-        <!-- Filters -->
         <div class="flex flex-wrap items-center gap-3">
-          <!-- Thema's filter -->
           <div class="relative">
             <button
               type="button"

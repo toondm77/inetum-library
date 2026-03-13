@@ -8,6 +8,7 @@ import { environment } from '../../../../environments/environment';
 import { Book } from '../../../models/Book';
 import { Page } from '../../../models/Page';
 import { PersonService } from '../../../services/person.service';
+import { toIsoDateTime } from '../../../utils/date';
 
 @Component({
   selector: 'app-admin-loan-create',
@@ -52,7 +53,7 @@ export class AdminLoanCreateComponent {
     try {
       const formatReader = new BrowserMultiFormatReader();
       const result = await formatReader.decodeFromImageUrl(objectUrl);
-      this.isLoading.set(false); // temporary set false so onCodeResult allows the request
+      this.isLoading.set(false);
       this.onCodeResult(result.getText());
     } catch (err) {
       this.error.set('Kon geen barcode in de afbeelding vinden.');
@@ -125,10 +126,8 @@ export class AdminLoanCreateComponent {
     this.error.set(null);
 
     const bookIds = this.cart().map(b => b.id);
-    const today = new Date();
-
     const payload = {
-      loanDate: new Date(today.toISOString().split('T')[0]),
+      loanDate: toIsoDateTime(new Date().toISOString()),
       returnDate: null,
       status: "LOANED", 
       personId: currentPerson.id,
@@ -142,8 +141,7 @@ export class AdminLoanCreateComponent {
         this.loanCreated.emit();
       },
       error: (err) => {
-        console.error('API Error when submitting loan:', err);
-        this.error.set('Kan uitlening niet voltooien');
+        this.error.set(err.error?.message || 'Kan de uitlening niet voltooien');
         this.isLoading.set(false);
       }
     });

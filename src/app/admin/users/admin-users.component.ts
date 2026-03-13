@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { Person } from '../../models/Person';
 import { Page } from '../../models/Page';
+import { getUserRoleColor, getUserRoleLabel, getUserStatusColor, getUserStatusLabel } from '../../utils/status';
 
 
 @Component({
@@ -25,6 +26,24 @@ export class AdminUsersComponent {
   protected readonly currentPage = signal(0);
   protected readonly totalPages = signal(0);
   protected readonly pageSize = signal(20);
+
+  protected userStatusLabel(status: string | undefined | null): string {
+    return getUserStatusLabel(status);
+  }
+
+  protected userStatusColor(status: string | undefined | null): string {
+    const base = 'inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold';
+    return `${base} ${getUserStatusColor(status)}`;
+  }
+
+  protected userRoleLabel(role: string | undefined | null): string {
+    return getUserRoleLabel(role);
+  }
+
+  protected userRoleColor(role: string | undefined | null): string {
+    const base = 'inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold';
+    return `${base} ${getUserRoleColor(role)}`;
+  }
 
   constructor() {
     this.loadUsers();
