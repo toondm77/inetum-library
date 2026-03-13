@@ -9,6 +9,7 @@ import { RoleService } from '../services/role.service';
 import { BookUpdatePayload } from '../models/book-update-payload.model';
 import { Book } from '../models/Book';
 import { Loan } from '../models/Loan';
+import { getBookStateLabel } from '../utils/status';
 
 interface AuthorOption {
   id: number;
@@ -101,7 +102,7 @@ export class BookDetailComponent {
       this.route.paramMap.subscribe((params) => {
         const bookId = params.get('id');
         if (bookId) {
-          this.loadBook(bookId);
+          this.loadBook(bookId)
           this.loadLoansIfAdmin(bookId);
         }
       })
@@ -160,8 +161,7 @@ export class BookDetailComponent {
   }
 
   protected availabilityLabel(state?: string): string {
-    if (!state) return 'Onbekend';
-    return state === 'AVAILABLE' ? 'Beschikbaar' : 'Niet beschikbaar';
+    return getBookStateLabel(state);
   }
 
   protected availabilityTone(state?: string): string {

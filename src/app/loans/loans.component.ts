@@ -158,7 +158,7 @@ export class LoansComponent {
       .set('page', String(this.currentPage()))
       .set('size', String(this.pageSize()))
       .set('sort', 'loanDate')
-      .set('direction', 'asc')
+      .set('direction', 'desc')
       .set('personId', String(personId));
 
     this.http.get<Page<Loan>>(`${this.apiBase}/loans`, { params }).subscribe({

@@ -53,7 +53,7 @@ export class AdminLoanCreateComponent {
     try {
       const formatReader = new BrowserMultiFormatReader();
       const result = await formatReader.decodeFromImageUrl(objectUrl);
-      this.isLoading.set(false); // temporary set false so onCodeResult allows the request
+      this.isLoading.set(false);
       this.onCodeResult(result.getText());
     } catch (err) {
       this.error.set('Kon geen barcode in de afbeelding vinden.');
