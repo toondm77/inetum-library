@@ -1,0 +1,233 @@
+<div class="p-4 md:p-6 bg-slate-50 min-h-screen font-sans w-full">
+  <div class="bg-white rounded-3xl shadow-sm p-6 md:p-8 w-full border border-gray-100">
+    <div class="mb-6 flex items-center justify-between gap-4">
+      <div>
+        <h1 class="text-[28px] font-bold text-slate-800 tracking-tight">Boek toevoegen</h1>
+        <p class="text-sm text-slate-500 mt-1">Vul de boekgegevens in en sla op.</p>
+      </div>
+      <button
+        type="button"
+        class="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
+        (click)="backToBooks()"
+      >
+        Terug
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div>
+        <label class="mb-1 block text-sm font-medium text-slate-700">Titel</label>
+        <input type="text" formControlName="title" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none" />
+        @if (showControlError(form.controls.title)) {
+          <p class="mt-1 text-xs text-red-600">Titel is verplicht (2-200 tekens).</p>
+        }
+      </div>
+
+      <div>
+        <label class="mb-1 block text-sm font-medium text-slate-700">ISBN</label>
+        <input type="text" formControlName="isbn" placeholder="10 of 13 cijfers" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none" />
+        @if (showControlError(form.controls.isbn)) {
+          <p class="mt-1 text-xs text-red-600">ISBN moet 10 of 13 cijfers bevatten.</p>
+        }
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="mb-1 block text-sm font-medium text-slate-700">Beschrijving</label>
+        <textarea rows="4" formControlName="description" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none"></textarea>
+        @if (showControlError(form.controls.description)) {
+          <p class="mt-1 text-xs text-red-600">Beschrijving is verplicht (10-2000 tekens).</p>
+        }
+      </div>
+
+      <div>
+        <div class="mb-1 flex items-center justify-between gap-2">
+          <label class="block text-sm font-medium text-slate-700">Auteur</label>
+          <button
+            type="button"
+            class="text-xs font-medium text-emerald-700 hover:text-emerald-800"
+            (click)="toggleAddAuthorMode()"
+          >
+            {{ addAuthorMode() ? 'Sluit nieuw auteur formulier' : 'Nieuwe auteur toevoegen' }}
+          </button>
+        </div>
+        <select formControlName="authorId" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none">
+          <option [ngValue]="null" disabled>Selecteer een auteur</option>
+          @for (author of authors(); track author.id) {
+            <option [ngValue]="author.id">{{ authorLabel(author) }}</option>
+          }
+        </select>
+        @if (showControlError(form.controls.authorId)) {
+          <p class="mt-1 text-xs text-red-600">Auteur selectie is verplicht.</p>
+        }
+      </div>
+
+      <div>
+        <label class="mb-1 block text-sm font-medium text-slate-700">Bibliotheek</label>
+        <select formControlName="libraryId" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none">
+          <option [ngValue]="null" disabled>Selecteer een bibliotheek</option>
+          @for (library of libraries(); track library.id) {
+            <option [ngValue]="library.id">{{ library.name }}</option>
+          }
+        </select>
+        @if (showControlError(form.controls.libraryId)) {
+          <p class="mt-1 text-xs text-red-600">Bibliotheek selectie is verplicht.</p>
+        }
+      </div>
+
+      @if (addAuthorMode()) {
+        <div class="md:col-span-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <h2 class="text-sm font-semibold text-slate-800 mb-3">Nieuwe auteur toevoegen</h2>
+          <div [formGroup]="authorForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="mb-1 block text-sm font-medium text-slate-700">Voornaam</label>
+              <input type="text" formControlName="firstName" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none" />
+              @if (showAuthorControlError(authorForm.controls.firstName)) {
+                <p class="mt-1 text-xs text-red-600">Voornaam is verplicht (max 100 tekens).</p>
+              }
+            </div>
+
+            <div>
+              <label class="mb-1 block text-sm font-medium text-slate-700">Achternaam</label>
+              <input type="text" formControlName="lastName" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none" />
+              @if (showAuthorControlError(authorForm.controls.lastName)) {
+                <p class="mt-1 text-xs text-red-600">Achternaam is verplicht (max 100 tekens).</p>
+              }
+            </div>
+
+            <div>
+              <label class="mb-1 block text-sm font-medium text-slate-700">Nationaliteit</label>
+              <input type="text" formControlName="nationality" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none" />
+            </div>
+
+            <div>
+              <label class="mb-1 block text-sm font-medium text-slate-700">Geboortedatum</label>
+              <input type="date" formControlName="birthDate" [max]="todayDate" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none" />
+              @if (showAuthorControlError(authorForm.controls.birthDate)) {
+                <p class="mt-1 text-xs text-red-600">Geboortedatum is verplicht en moet in het verleden liggen.</p>
+              }
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="mb-1 block text-sm font-medium text-slate-700">Beschrijving</label>
+              <textarea rows="3" formControlName="description" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none"></textarea>
+            </div>
+
+            @if (authorError()) {
+              <div class="md:col-span-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {{ authorError() }}
+              </div>
+            }
+
+            <div class="md:col-span-2">
+              <button
+                type="button"
+                class="rounded-full bg-slate-800 px-5 py-2.5 text-sm font-medium text-white hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+                [disabled]="authorSaving()"
+                (click)="createAuthor()"
+              >
+                {{ authorSaving() ? 'Auteur opslaan...' : 'Auteur opslaan en selecteren' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <div>
+        <label class="mb-1 block text-sm font-medium text-slate-700">Publicatiejaar</label>
+        <input type="number" min="1450" max="2100" step="1" formControlName="publishedYear" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none" />
+        @if (showControlError(form.controls.publishedYear)) {
+          <p class="mt-1 text-xs text-red-600">Publicatiejaar moet tussen 1450 en volgend jaar liggen.</p>
+        }
+      </div>
+
+      <div>
+        <label class="mb-1 block text-sm font-medium text-slate-700">Aantal pagina's</label>
+        <input type="number" min="1" max="10000" step="1" formControlName="amountOfPages" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none" />
+        @if (showControlError(form.controls.amountOfPages)) {
+          <p class="mt-1 text-xs text-red-600">Aantal pagina's moet tussen 1 en 10000 liggen.</p>
+        }
+      </div>
+
+      <div>
+        <label class="mb-1 block text-sm font-medium text-slate-700">Release datum</label>
+        <input type="date" formControlName="releaseDate" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none" />
+        @if (showControlError(form.controls.releaseDate)) {
+          <p class="mt-1 text-xs text-red-600">Release datum is verplicht.</p>
+        }
+      </div>
+
+      <div>
+        <label class="mb-1 block text-sm font-medium text-slate-700">Thema</label>
+        <select formControlName="theme" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none">
+          @for (theme of themes; track theme) {
+            <option [value]="theme">{{ theme }}</option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label class="mb-1 block text-sm font-medium text-slate-700">Boek status</label>
+        <select formControlName="bookState" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none">
+          @for (state of bookStates; track state) {
+            <option [value]="state">{{ state }}</option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label class="mb-1 block text-sm font-medium text-slate-700">Leeftijdscategorie</label>
+        <input type="text" formControlName="ageCategory" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none" />
+        @if (showControlError(form.controls.ageCategory)) {
+          <p class="mt-1 text-xs text-red-600">Leeftijdscategorie is verplicht (2-40 tekens).</p>
+        }
+      </div>
+
+      <div>
+        <label class="mb-1 block text-sm font-medium text-slate-700">Aankoopprijs</label>
+        <input type="number" min="0" step="0.01" formControlName="purchasePrice" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none" />
+        @if (showControlError(form.controls.purchasePrice)) {
+          <p class="mt-1 text-xs text-red-600">Aankoopprijs moet 0 of hoger zijn.</p>
+        }
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="mb-1 block text-sm font-medium text-slate-700">Afbeelding (Cover Image)</label>
+        <div class="mt-1 flex items-center gap-4">
+          <input type="file" accept="image/*" (change)="onFileSelected($event)" class="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100" />
+        </div>
+      </div>
+
+      @if (releaseYearMismatch()) {
+        <div class="md:col-span-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          Publicatiejaar moet overeenkomen met het jaar uit de release datum.
+        </div>
+      }
+
+      @if (submitError()) {
+        <div class="md:col-span-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {{ submitError() }}
+        </div>
+      }
+
+      @if (submitSuccess()) {
+        <div class="md:col-span-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          {{ submitSuccess() }}
+        </div>
+      }
+
+      <div class="md:col-span-2 flex items-center gap-3 pt-2">
+        <button
+          type="submit"
+          class="rounded-full bg-[#00A896] px-6 py-3 text-sm font-medium text-white hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-60"
+          [disabled]="saving()"
+        >
+          {{ saving() ? 'Opslaan...' : 'Boek opslaan' }}
+        </button>
+
+        <a routerLink="/admin/books" class="rounded-full border border-slate-300 px-6 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100">
+          Annuleren
+        </a>
+      </div>
+    </form>
+  </div>
+</div>

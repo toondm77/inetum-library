@@ -1,0 +1,129 @@
+<div class="p-0 sm:p-4 md:p-6 bg-slate-50 min-h-screen font-sans w-full">
+  <div class="bg-white sm:rounded-2xl md:rounded-3xl shadow-sm p-3 sm:p-5 md:p-8 w-full sm:border border-b border-gray-100">
+    <div class="mb-6 flex flex-col md:flex-row md:items-start justify-between gap-4">
+      <div>
+        <h1 class="text-2xl md:text-[28px] font-bold text-slate-800 tracking-tight">Mijn recente uitleningen</h1>
+        <p class="text-sm text-slate-500 mt-1">Overzicht van je uitleningen.</p>
+      </div>
+       <div class="flex items-center gap-2 sm:gap-3">
+        <button
+          type="button"
+          class="rounded-full bg-emerald-600 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-emerald-500 transition-colors shadow-sm"
+          (click)="isCreatingLoan.set(true)"
+        >
+          Nieuwe uitlening
+        </button>
+      <button
+        type="button"
+        class="rounded-full border border-slate-300 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+        (click)="reload()"
+        [disabled]="apiLoading()"
+      >
+        Vernieuwen
+      </button>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4 mb-6">
+      <span class="text-sm text-slate-500">Totaal uitleningen</span>
+      <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-[13px] font-bold border border-gray-200">{{ totalElements() }}</span>
+    </div>
+
+    @if (apiLoading()) {
+      <div class="flex items-center justify-center py-20">
+        <div class="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent"></div>
+      </div>
+    } @else if (apiError()) {
+      <div class="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+        {{ apiError() }}
+      </div>
+    } @else {
+      <div class="overflow-x-auto rounded-xl border border-gray-100 bg-white">
+        <table class="w-full text-left border-collapse">
+          <thead class="bg-white whitespace-nowrap">
+            <tr class="border-b border-gray-100 text-xs sm:text-sm">
+              <th class="hidden sm:table-cell py-3 sm:py-5 px-3 sm:px-6 font-bold text-gray-800">ID</th>
+              <th class="py-3 sm:py-5 px-3 sm:px-6 font-bold text-gray-800">Datum</th>
+              <th class="hidden md:table-cell py-3 sm:py-5 px-3 sm:px-6 font-bold text-gray-800">Terugbrengdatum</th>
+              <th class="py-3 sm:py-5 px-3 sm:px-6 font-bold text-gray-800">Status</th>
+              <th class="hidden sm:table-cell py-3 sm:py-5 px-3 sm:px-6 font-bold text-gray-800">Boeken</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (loan of loans(); track loan.id) {
+              <tr class="border-b border-gray-100 hover:bg-slate-50/60 transition-colors">
+                <td class="hidden sm:table-cell py-3 sm:py-5 px-3 sm:px-6 text-[15px] font-medium text-gray-800 whitespace-nowrap">#{{ loan.id }}</td>
+                <td class="py-3 sm:py-5 px-3 sm:px-6 text-[14px] sm:text-[15px] text-gray-700 whitespace-nowrap">{{ formatDate(loan.loanDate) }}</td>
+                <td class="hidden md:table-cell py-3 sm:py-5 px-3 sm:px-6 text-[14px] sm:text-[15px] text-gray-700 whitespace-nowrap">{{ formatDate(loan.returnDate) }}</td>
+                <td class="py-3 sm:py-5 px-3 sm:px-6 whitespace-nowrap">
+                  <span [class]="statusClass(loan.status)">
+                    {{ statusLabel(loan.status) }}
+                  </span>
+                </td>
+                <td class="hidden sm:table-cell py-3 sm:py-5 px-3 sm:px-6 text-[14px] sm:text-[15px] text-gray-700 max-w-xs">
+                  @if (loan.bookIds.length > 0) {
+                    <div class="flex flex-col sm:flex-row flex-wrap gap-1 sm:gap-2">
+                      @for (bookId of loan.bookIds; track bookId) {
+                        <a
+                          [routerLink]="['/books', bookId]"
+                          class="inline-flex items-center justify-center sm:justify-start w-fit rounded-lg border border-slate-200 bg-white p-1 hover:bg-slate-50 transition-colors"
+                        >
+                          <img
+                            [src]="bookCoverImage(bookId) && bookCoverImage(bookId) !== 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==' ? 'data:image/jpeg;base64,' + bookCoverImage(bookId) : 'commingsoon.png'"
+                            alt="Boekcover"
+                            class="h-22 w-14 object-cover rounded shadow-sm"
+                          />
+                        </a>
+                      }
+                    </div>
+                  } @else {
+                    -
+                  }
+                </td>
+              </tr>
+            }
+
+            @if (loans().length === 0) {
+              <tr>
+                <td colspan="5" class="py-10 px-6 text-center text-gray-500">Geen uitleningen gevonden.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (totalPages() > 0) {
+        <div class="mt-4 sm:mt-8 flex items-center justify-center sm:justify-end gap-2 border-t border-slate-200 pt-4 sm:pt-6">
+          <button
+            type="button"
+            class="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50 disabled:hover:bg-white transition"
+            [disabled]="currentPage() === 0"
+            (click)="prevPage()"
+          >
+            Vorige
+          </button>
+
+          <span class="text-sm font-medium text-slate-900 mx-2 min-w-[3rem] text-center">
+            {{ currentPage() + 1 }} / {{ totalPages() }}
+          </span>
+
+          <button
+            type="button"
+            class="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50 disabled:hover:bg-white transition"
+            [disabled]="currentPage() >= totalPages() - 1"
+            (click)="nextPage()"
+          >
+            Volgende
+          </button>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+@if (isCreatingLoan()) {
+  <app-admin-loan-create 
+    (closeDialog)="isCreatingLoan.set(false)" 
+    (loanCreated)="isCreatingLoan.set(false); loadMyLoans()" 
+  />
+}

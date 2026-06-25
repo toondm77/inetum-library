@@ -1,0 +1,163 @@
+<div class="p-4 md:p-6 bg-slate-50 min-h-screen font-sans w-full">
+  <div class="max-w-3xl mx-auto bg-white rounded-3xl shadow-sm p-6 md:p-8 border border-gray-100">
+    <div class="mb-6">
+      <a routerLink="/admin/loans" class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-800 mb-4 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 mr-1">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+        Terug naar overzicht
+      </a>
+      <h1 class="text-[28px] font-bold text-slate-800 tracking-tight">Uitlening #{{" " + loanId()}} bewerken</h1>
+      <p class="text-sm text-slate-500 mt-1">Pas de details van deze uitlening aan.</p>
+    </div>
+
+    @if (error()) {
+      <div class="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+        {{ error() }}
+      </div>
+    }
+
+    @if (isLoading()) {
+      <div class="flex items-center justify-center py-20">
+        <div class="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+      </div>
+    } @else {
+      <form [formGroup]="loanForm" (ngSubmit)="save()" class="space-y-6">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label for="loanDate" class="block text-sm font-medium text-slate-700">Uitleningsdatum <span class="text-red-500">*</span></label>
+            <input 
+              type="datetime-local" 
+              id="loanDate" 
+              formControlName="loanDate"
+              class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            >
+          </div>
+          <div class="space-y-2">
+            <label for="returnDate" class="block text-sm font-medium text-slate-700">Terugbrengdatum</label>
+            <input 
+              type="datetime-local" 
+              id="returnDate" 
+              formControlName="returnDate"
+              class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            >
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label for="status" class="block text-sm font-medium text-slate-700">Status <span class="text-red-500">*</span></label>
+            <select 
+              id="status" 
+              formControlName="status"
+              class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            >
+              <option value="LOANED">Uitgeleend (LOANED)</option>
+              <option value="RETURNED">Teruggebracht (RETURNED)</option>
+              <option value="PARTLYRETURNED">Gedeeltelijk teruggebracht (PARTLYRETURNED)</option>
+              <option value="LOST">Verloren (LOST)</option>
+            </select>
+          </div>
+
+          <div class="space-y-2">
+            <label for="personId" class="block text-sm font-medium text-slate-700">Persoon <span class="text-red-500">*</span></label>
+            <div class="relative" (click)="$event.stopPropagation()">
+              <input
+                type="text"
+                placeholder="Zoek een persoon..."
+                [value]="isPersonDropdownOpen() ? personSearchQuery() : selectedPersonName()"
+                (input)="personSearchQuery.set($any($event.target).value); isPersonDropdownOpen.set(true)"
+                (focus)="isPersonDropdownOpen.set(true)"
+                (keydown.enter)="$event.preventDefault()"
+                class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              >
+              @if (isPersonDropdownOpen() && filteredPersons().length > 0) {
+                <div class="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                  @for (person of filteredPersons(); track person.id) {
+                    <div 
+                      class="px-4 py-2 hover:bg-slate-50 cursor-pointer text-sm"
+                      (click)="selectPerson(person)"
+                    >
+                      <div class="font-medium text-slate-800">{{ person.firstName }} {{ person.lastName }}</div>
+                      <div class="text-xs text-slate-500">ID: {{ person.id }} | Rol: {{ person.userRole }}</div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <label class="block text-sm font-medium text-slate-700">Gekoppelde Boeken</label>
+
+          <div class="relative" (click)="$event.stopPropagation()">
+            <input
+              type="text"
+              placeholder="Zoek een boek op titel of ISBN om toe te voegen..."
+              [value]="bookSearchQuery()"
+              (input)="bookSearchQuery.set($any($event.target).value); isBookDropdownOpen.set(true)"
+              (focus)="isBookDropdownOpen.set(true)"
+              (keydown.enter)="$event.preventDefault()"
+              class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            >
+            @if (isBookDropdownOpen() && filteredBooks().length > 0) {
+              <div class="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                @for (book of filteredBooks(); track book.id) {
+                  <div 
+                    class="px-4 py-2 hover:bg-slate-50 cursor-pointer text-sm"
+                    (click)="addBook(book)"
+                  >
+                    <div class="font-medium text-slate-800">{{ book.title }}</div>
+                    <div class="text-xs text-slate-500">Auteur: {{ book.authorName }} | ISBN: {{ book.isbn }}</div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-wrap gap-2">
+            @for (bookId of loanForm.get('bookIds')?.value; track bookId; let i = $index) {
+              <div class="inline-flex items-center gap-1 bg-white border border-slate-200 px-3 py-1.5 rounded-full text-sm font-medium text-slate-700 shadow-sm">
+                {{ getBookTitle(bookId) }}
+                <button type="button" class="text-slate-400 hover:text-red-500 ml-1 focus:outline-none" (click)="removeBookId(i)" title="Verwijder boek">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            }
+            @if (loanForm.get('bookIds')?.value?.length === 0) {
+              <span class="text-sm text-slate-400">Geen boeken gekoppeld aan deze uitlening.</span>
+            }
+          </div>
+        </div>
+
+        <div class="pt-6 border-t border-slate-100 flex items-center justify-end gap-3 flex-wrap">
+          <a
+            routerLink="/admin/loans"
+            class="px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 bg-slate-50 rounded-xl transition-colors"
+          >
+            Annuleren
+          </a>
+          <button
+            type="submit"
+            class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition-colors disabled:opacity-50 disabled:hover:bg-blue-600 shadow-sm"
+            [disabled]="loanForm.invalid || isSaving()"
+          >
+            @if (isSaving()) {
+              <div class="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"></div>
+              Opslaan...
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+              Wijzigingen opslaan
+            }
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</div>

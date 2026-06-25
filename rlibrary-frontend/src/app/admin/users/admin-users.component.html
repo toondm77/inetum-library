@@ -1,0 +1,102 @@
+<div class="p-4 md:p-6 bg-slate-50 min-h-screen font-sans w-full">
+  <div class="bg-white rounded-3xl shadow-sm p-6 md:p-8 w-full border border-gray-100">
+    <div class="mb-6 flex items-start justify-between gap-4">
+      <div>
+        <h1 class="text-[28px] font-bold text-slate-800 tracking-tight">Gebruikers</h1>
+        <p class="text-sm text-slate-500 mt-1">Overzicht van alle gebruikers. Klik op een rij voor detail.</p>
+      </div>
+      <button
+        type="button"
+        class="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+        (click)="loadUsers()"
+        [disabled]="apiLoading()"
+      >
+        Vernieuwen
+      </button>
+    </div>
+
+    <div class="flex items-center gap-4 mb-6">
+      <span class="text-sm text-slate-500">Totaal gebruikers</span>
+      <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-[13px] font-bold border border-gray-200">{{ totalElements() }}</span>
+    </div>
+
+    @if (apiLoading()) {
+      <div class="flex items-center justify-center py-20">
+        <div class="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent"></div>
+      </div>
+    } @else if (apiError()) {
+      <div class="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+        {{ apiError() }}
+      </div>
+    } @else {
+      <div class="overflow-x-auto rounded-xl border border-gray-100 bg-white">
+        <table class="w-full text-left border-collapse whitespace-nowrap">
+          <thead class="bg-white">
+            <tr class="border-b border-gray-100 text-sm">
+              <th class="py-5 px-6 font-bold text-gray-800">Naam</th>
+              <th class="py-5 px-6 font-bold text-gray-800">Geboortedatum</th>
+              <th class="py-5 px-6 font-bold text-gray-800">Functie</th>
+              <th class="py-5 px-6 font-bold text-gray-800">Rol</th>
+              <th class="py-5 px-6 font-bold text-gray-800">Status</th>
+              <th class="py-5 px-6 font-bold text-gray-800">Taal</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of users(); track user.id) {
+              <tr
+                class="border-b border-gray-100 hover:bg-slate-50/60 transition-colors cursor-pointer"
+                (click)="openUserDetails(user.id)"
+                tabindex="0"
+                role="button"
+                (keydown.enter)="openUserDetails(user.id)"
+              >
+                <td class="py-5 px-6 text-[15px] font-medium text-gray-800">{{ fullName(user) }}</td>
+                <td class="py-5 px-6 text-[15px] text-gray-700">{{ formatDate(user.birthDate) }}</td>
+                <td class="py-5 px-6 text-[15px] text-gray-700">{{ user.functie || '-' }}</td>
+                <td class="py-5 px-6 text-[15px] text-gray-700">
+                  <span [class]="userRoleColor(user.userRole)">{{ userRoleLabel(user.userRole) }}</span>
+                </td>
+                <td class="py-5 px-6 text-[15px] text-gray-700">
+                  <span [class]="userStatusColor(user.accountStatus)">{{ userStatusLabel(user.accountStatus) }}</span>
+                </td>
+                <td class="py-5 px-6 text-[15px] text-gray-700">{{ user.preferredLanguage || '-' }}</td>
+              </tr>
+            }
+
+            @if (users().length === 0) {
+              <tr>
+                <td colspan="6" class="py-10 px-6 text-center text-gray-500">Geen gebruikers gevonden.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (totalPages() > 0) {
+        <div class="mt-8 flex items-center justify-end gap-2 border-t border-slate-200 pt-6">
+          <button
+            type="button"
+            class="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50 disabled:hover:bg-white transition"
+            [disabled]="currentPage() === 0"
+            (click)="prevPage()"
+          >
+            Vorige
+          </button>
+
+          <span class="text-sm font-medium text-slate-900 mx-2 min-w-[3rem] text-center">
+            {{ currentPage() + 1 }} / {{ totalPages() }}
+          </span>
+
+          <button
+            type="button"
+            class="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50 disabled:hover:bg-white transition"
+            [disabled]="currentPage() >= totalPages() - 1"
+            (click)="nextPage()"
+          >
+            Volgende
+          </button>
+        </div>
+      }
+    }
+  </div>
+</div>
