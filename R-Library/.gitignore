@@ -34,3 +34,5 @@ build/
 .github
 
 /src/main/gen
+
+.env
